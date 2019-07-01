@@ -8,9 +8,6 @@
           </h1>
 
           <a
-            href
-            data-toggle="modal"
-            data-target="#soccerModal"
             v-for="(item, index) in sports"
             :key="index+'sport'"
             @click.prevent="expandSport(index)"
@@ -27,7 +24,11 @@
                 <h1 class="font-weight-bold float-left">{{ item.name.toUpperCase() }}</h1>
               </div>
               <transition name="shade">
-                <modal-component-two v-show="item.show" :data="playgrounds(item.id)" />
+                <modal-component-two
+                  v-show="item.show"
+                  :data="playgrounds(item.id)"
+                  :category_id="item.id"
+                />
               </transition>
             </div>
           </a>
@@ -40,6 +41,28 @@
           <h1 class="font-weight-light">
             <span>НОВОСТИ</span>
           </h1>
+          <div style="overflow: hidden; height: 100%; width: 100%; position: relative">
+            <vue-slick
+              :options="{
+                slidesToShow: 4, 
+                slidesToScroll: 4, 
+                dots: true,
+                infinite: false,
+                speed: 300,
+                autoplay: true,
+                autoplaySpeed: 2000,
+                arrows: false
+              }"
+            >
+              <div class="text-center mt-2" v-for="(item, index) in news" :key="index+'new'">
+                <div class="news fdb-box pt-5 p-4">
+                  {{ item.title }}
+                  <p class="lead">{{ item.content }}</p>
+                  <p class="align-bottom more mt-5 mb-5">{{ item.author }}</p>
+                </div>
+              </div>
+            </vue-slick>
+          </div>
         </div>
       </div>
     </section>
@@ -78,15 +101,21 @@
 import ModalComponent from "~/components/modal.vue";
 import ModalComponentTwo from "~/components/modal2.vue";
 
+import slickSettings from "~/service/slickSettings.js";
+
 export default {
   components: { ModalComponent, ModalComponentTwo },
   async fetch({ store }) {
     await store.dispatch("getPlaycategories");
     await store.dispatch("getPlaygrounds");
+    await store.dispatch("getNews");
   },
   computed: {
     playcategories() {
       return this.$store.state.playcategories;
+    },
+    news() {
+      return this.$store.state.news;
     }
   },
   data() {
@@ -97,7 +126,9 @@ export default {
         { name: "Теннис", img: "img/tennis.jpg", show: false, id: 3 },
         { name: "Пинг-понг", img: "img/ping_pong.png", show: false, id: 4 },
         { name: "Волейбол", img: "img/volleyball.png", show: false, id: 5 }
-      ]
+      ],
+
+      slickSettings
     };
   },
 
@@ -146,58 +177,20 @@ export default {
   margin-bottom: 1rem !important;
 }
 
-.slick-slide {
-  outline: none;
-  position: relative;
+.slick-track {
+  display: flex;
+  overflow: hidden;
+
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
 }
 
-@media (min-width: 768px) {
-  .slick-slide {
-    -ms-flex: 0 0 25%;
-    flex: 0 0 25%;
-    max-width: 25%;
-  }
+.slick-slide {
+  margin-right: 1em;
 }
 
-.slick-prev:before,
-.slick-next:before {
-  font-size: 30px;
-  color: #064482;
-}
-
-.slick-prev {
-  left: -40px;
-}
-[dir="rtl"] .slick-prev {
-  right: -40px;
-  left: auto;
-}
-
-.slick-next {
-  right: -40px;
-}
-[dir="rtl"] .slick-next {
-  right: auto;
-  left: -40px;
-}
-
-.slick-prev:hover,
-.slick-prev:focus,
-.slick-next:hover,
-.slick-next:focus {
-  background-color: white;
-}
-
-.slick-prev,
-.slick-next {
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-
-  color: grey;
-  background-color: white;
+.slick-dots {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5em;
 }
 </style>

@@ -5,7 +5,10 @@ const createStore = () => {
   return new Vuex.Store({
     state: {
       playcategories: [],
-      playgrounds: []
+      playgrounds: [],
+      news: [],
+      searchQuery: {},
+      searchResults: []
     },
 
     getters: {},
@@ -24,6 +27,21 @@ const createStore = () => {
       setPlaygrounds(state, payload) {
         state.playgrounds = [];
         state.playgrounds = [...payload];
+      },
+
+      setNews(state, payload) {
+        state.news = [];
+        state.news = [...payload];
+      },
+
+      setSearchResults(state, payload) {
+        state.searchResults = [];
+        state.searchResults = [...payload];
+      },
+
+      setSearchQuery(state, payload) {
+        state.searchQuery = {};
+        state.searchQuery = { ...payload };
       }
     },
 
@@ -45,6 +63,32 @@ const createStore = () => {
           let { data } = response;
 
           commit("setPlaygrounds", data.results);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async getNews({ state, commit }) {
+        try {
+          let response = await api().get("news");
+          let { data } = response;
+
+          commit("setNews", data.results);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async getSearchResults({ state, commit }) {
+        try {
+          let query = "";
+          for (let key in state.searchQuery) {
+            query += `${key}=${state.searchQuery[key]}&`;
+          }
+          let response = await api().get("playgrounds/?" + query);
+          let { data } = response;
+
+          commit("setSearchResults", data.results);
         } catch (error) {
           throw error;
         }

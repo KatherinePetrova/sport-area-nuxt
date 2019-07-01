@@ -2,7 +2,10 @@
   <div class="modal-two-main">
     <div class="inner-modal">
       <div class="total">{{ `Всего ${data.length} объекта`.toUpperCase() }}</div>
-      <div class="more"></div>
+      <div
+        class="more_abs"
+        @click.stop="$router.push(`/search?category=${category_id}`)"
+      >ПОСМОТРЕТЬ ЕЩЕ</div>
       <div class="pole_block" v-for="(item, index) in data" :key="index+'pole_block'" @click.stop>
         <div
           class="img"
@@ -14,7 +17,7 @@
           <span>{{ `Адрес - ${item.location.address}` }}</span>
           <span>{{ `Тип - ${item.type}` }}</span>
           <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
-          <a href="/" @click.stop>Подробнее</a>
+          <a href="/">Подробнее</a>
         </div>
       </div>
     </div>
@@ -22,7 +25,7 @@
 </template>
 <script>
 export default {
-  props: ["data"]
+  props: ["data", "category_id"]
 };
 </script>
 <style scoped>
@@ -72,21 +75,23 @@ export default {
   background-color: #ffffff;
 }
 
-.inner-modal > .more {
+.inner-modal > .more_abs {
   position: absolute;
 
-  color: #1e568e;
+  background-color: #1e568e;
+
   font-weight: bold;
-  text-shadow: 0 5px 6px rgba(0, 0, 0, 0.16);
-  line-height: 1.21;
   font-size: 1.5em;
+  color: white;
 
-  padding: 0 0.5em;
-
-  top: -0.75em;
+  bottom: -0.75em;
   right: 1.75em;
 
-  background-color: #ffffff;
+  padding: 0 0.5em;
+}
+
+.inner-modal > .more_abs:hover {
+  box-shadow: 0 10px 12px 0 rgba(0, 0, 0, 0.3);
 }
 
 .inner-modal > .pole_block {
