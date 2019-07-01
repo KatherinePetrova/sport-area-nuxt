@@ -15,7 +15,7 @@
             <div
               :ref="'sport' + index"
               :style="{ 
-                backgroundImage: `url(${item.img})`,
+                backgroundImage: `url(${playcategories[index].photo})`,
                 marginBottom: item.show ? '5rem!important' : '1rem!important'
               }"
               class="col-lg-12 box text-white my-2 py-4 text-center expandSport"

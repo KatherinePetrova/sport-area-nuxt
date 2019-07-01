@@ -10,7 +10,7 @@
 
       <div class="block">
         <b-form-select v-model="filter.category">
-          <option disabled :value="null">Вид спорта</option>
+          <option disabled :value="false">Вид спорта</option>
           <option
             v-for="(item, index) in playcategories"
             :key="index+'playcategories'"
@@ -18,7 +18,7 @@
           >{{item.name}}</option>
         </b-form-select>
         <b-form-select v-model="filter.type">
-          <option disabled :value="null">Тип площадки</option>
+          <option disabled :value="false">Тип площадки</option>
           <option value="closed">Крытая</option>
           <option value="open">Открытая</option>
         </b-form-select>
@@ -52,8 +52,8 @@
             ></b-form-input>
           </span>
         </div>
-        <b-form-select v-model="filter.cover_type">
-          <option disabled :value="null">Упорядочить</option>
+        <b-form-select v-model="filter.order_by">
+          <option disabled :value="false">Упорядочить</option>
           <option value="new">По дате - сначала новые</option>
           <option value="old">По дате - сначала старые</option>
           <option value="cost_inc">По цене - возрастанию</option>
@@ -102,7 +102,11 @@
           class="checkbox"
           v-model="filter.is_parking"
         >Парковка</b-form-checkbox>
-        <a href="/" @click.prevent style="position: absolute; bottom: 0; left: 0">Сбросить фильтр</a>
+        <a
+          href="/"
+          @click.prevent="clearSearch()"
+          style="position: absolute; bottom: 0; left: 0"
+        >Сбросить фильтр</a>
       </div>
     </div>
     <div class="result">
@@ -146,7 +150,7 @@ export default {
     return {
       loading: false,
       filter: {
-        category: null,
+        category: false,
         is_coach: false,
         is_parking: false,
         is_shower: false,
@@ -155,12 +159,12 @@ export default {
         is_dressroom: false,
         is_tribunes: false,
         is_sauna: false,
-        cover_type: null,
-        order_by: null,
-        time_from: null,
-        time_to: null,
-        cost_from: null,
-        cost_to: null
+        cover_type: false,
+        order_by: false,
+        time_from: false,
+        time_to: false,
+        cost_from: false,
+        cost_to: false
       }
     };
   },
@@ -187,6 +191,9 @@ export default {
       }
 
       this.$router.push("/search/" + query);
+    },
+    clearSearch() {
+      this.$router.push("/search/?category=1");
     },
     async applySearch(route) {
       this.loading = true;
@@ -232,8 +239,8 @@ export default {
 }
 
 .result > .total {
-  width: 50%;
-  max-width: 50%;
+  width: 60%;
+  max-width: 60%;
 
   padding: 3em 2em;
 
@@ -343,7 +350,7 @@ export default {
   align-items: center;
 
   text-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-  font-family: "Century Gothic";
+  /* font-family: "Century Gothic"; */
   font-size: 119px;
   font-weight: bold;
   font-style: normal;
@@ -382,7 +389,7 @@ export default {
 
   padding: 0 0.25em;
 
-  font-family: "Century Gothic";
+  /* font-family: "Century Gothic"; */
   font-weight: normal;
   font-style: normal;
   font-stretch: normal;
@@ -404,7 +411,7 @@ export default {
 
   position: relative;
 
-  font-family: "Century Gothic";
+  /* font-family: "Century Gothic"; */
   color: #064482;
 }
 
