@@ -15,7 +15,7 @@
             <div
               :ref="'sport' + index"
               :style="{ 
-                backgroundImage: `url(${playcategories[index].photo})`,
+                backgroundImage: `url(${item.photo})`,
                 marginBottom: item.show ? '5rem!important' : '1rem!important'
               }"
               class="col-lg-12 box text-white my-2 py-4 text-center expandSport"
@@ -26,8 +26,9 @@
               <transition name="shade">
                 <modal-component-two
                   v-show="item.show"
-                  :data="playgrounds(item.id)"
+                  :data="item.playgrounds"
                   :category_id="item.id"
+                  :total="item.total"
                 />
               </transition>
             </div>
@@ -103,33 +104,34 @@ import ModalComponentTwo from "~/components/modal2.vue";
 
 import slickSettings from "~/service/slickSettings.js";
 
+import api from "~/service/api.js";
+
 export default {
   components: { ModalComponent, ModalComponentTwo },
-  async fetch({ store }) {
+  async asyncData({ store }) {
     await store.dispatch("getPlaycategories");
-    await store.dispatch("getPlaygrounds");
     await store.dispatch("getNews");
+
+    let sports = JSON.parse(JSON.stringify(store.state.playcategories));
+    for (let i = 0; i < sports.length; i++) {
+      sports[i].show = false;
+
+      let response = await api().get(`playgrounds/?category=${sports[i].id}`);
+      let { data } = response;
+
+      sports[i].total = data.count;
+      sports[i].playgrounds = data.results.slice(0, 4);
+    }
+
+    return { sports };
   },
   computed: {
-    playcategories() {
-      return this.$store.state.playcategories;
-    },
     news() {
       return this.$store.state.news;
     }
   },
   data() {
-    return {
-      sports: [
-        { name: "Футбол", img: "img/soccer.png", show: false, id: 1 },
-        { name: "Баскетбол", img: "img/basketball.png", show: false, id: 2 },
-        { name: "Теннис", img: "img/tennis.jpg", show: false, id: 3 },
-        { name: "Пинг-понг", img: "img/ping_pong.png", show: false, id: 4 },
-        { name: "Волейбол", img: "img/volleyball.png", show: false, id: 5 }
-      ],
-
-      slickSettings
-    };
+    return { slickSettings };
   },
 
   methods: {
@@ -145,14 +147,6 @@ export default {
           this.sports[i].show = false;
         }
       }
-    },
-    playgrounds(id) {
-      let result = this.$store.state.playgrounds.filter(
-        item => item.category == id
-      );
-      if (result.length > 4) result = result.slice(0, 4);
-
-      return result;
     }
   }
 };

@@ -1,12 +1,12 @@
 <template>
   <div class="modal-two-main">
     <div class="inner-modal">
-      <div class="total">{{ `Всего ${data.length} объекта`.toUpperCase() }}</div>
+      <div class="total">{{ `Всего ${total} объекта`.toUpperCase() }}</div>
       <div
         class="more_abs"
         @click.stop="$router.push(`/search?category=${category_id}`)"
       >ПОСМОТРЕТЬ ЕЩЕ</div>
-      <div class="pole_block" v-for="(item, index) in data" :key="index+'pole_block'" @click.stop>
+      <div class="pole_block" v-for="(item, index) in data" :key="index+'pole_block'">
         <div
           class="img"
           :style="{backgroundImage: item.images.length > 0 ? `url(${item.images[0].image})` : '/img/logo.png' }"
@@ -17,7 +17,7 @@
           <span>{{ `Адрес - ${item.location.address}` }}</span>
           <span>{{ `Тип - ${item.type}` }}</span>
           <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
-          <a href="/">Подробнее</a>
+          <a :href="`/playground/${item.id}`" @click.stop>Подробнее</a>
         </div>
       </div>
     </div>
@@ -25,7 +25,7 @@
 </template>
 <script>
 export default {
-  props: ["data", "category_id"]
+  props: ["data", "category_id", "total"]
 };
 </script>
 <style scoped>

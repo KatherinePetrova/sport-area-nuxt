@@ -10,15 +10,15 @@
 
       <div class="block">
         <b-form-select v-model="filter.category">
-          <option disabled :value="false">Вид спорта</option>
+          <option disabled :value="null">Вид спорта</option>
           <option
             v-for="(item, index) in playcategories"
             :key="index+'playcategories'"
             :value="item.id"
           >{{item.name}}</option>
         </b-form-select>
-        <b-form-select v-model="filter.type">
-          <option disabled :value="false">Тип площадки</option>
+        <b-form-select v-model="filter.cover_type">
+          <option disabled :value="null">Тип площадки</option>
           <option value="closed">Крытая</option>
           <option value="open">Открытая</option>
         </b-form-select>
@@ -53,7 +53,7 @@
           </span>
         </div>
         <b-form-select v-model="filter.order_by">
-          <option disabled :value="false">Упорядочить</option>
+          <option disabled :value="null">Упорядочить</option>
           <option value="new">По дате - сначала новые</option>
           <option value="old">По дате - сначала старые</option>
           <option value="cost_inc">По цене - возрастанию</option>
@@ -134,7 +134,7 @@
             <span>{{ `Адрес - ${item.location.address}` }}</span>
             <span>{{ `Тип - ${item.type}` }}</span>
             <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
-            <a href="/">Подробнее</a>
+            <a :href="`/playground/${item.id}`">Подробнее</a>
           </div>
         </div>
       </div>
@@ -143,14 +143,15 @@
 </template>
 <script>
 export default {
-  async fetch({ store, query }) {
+  async fetch({ store, query, redirect }) {
+    if (!query.category) redirect("/search?category=1");
     await store.dispatch("getPlaycategories");
   },
   data() {
     return {
       loading: false,
       filter: {
-        category: false,
+        category: null,
         is_coach: false,
         is_parking: false,
         is_shower: false,
@@ -159,12 +160,12 @@ export default {
         is_dressroom: false,
         is_tribunes: false,
         is_sauna: false,
-        cover_type: false,
-        order_by: false,
-        time_from: false,
-        time_to: false,
-        cost_from: false,
-        cost_to: false
+        cover_type: null,
+        order_by: null,
+        time_from: null,
+        time_to: null,
+        cost_from: null,
+        cost_to: null
       }
     };
   },
@@ -206,6 +207,7 @@ export default {
       this.$store.commit("setSearchQuery", query);
       await this.$store.dispatch("getSearchResults");
 
+      window.scrollTo({ top: 650, behavior: "smooth" });
       this.loading = false;
     }
   },

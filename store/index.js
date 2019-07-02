@@ -8,7 +8,8 @@ const createStore = () => {
       playgrounds: [],
       news: [],
       searchQuery: {},
-      searchResults: []
+      searchResults: [],
+      playground: {}
     },
 
     getters: {},
@@ -16,12 +17,7 @@ const createStore = () => {
     mutations: {
       setPlaycategories(state, payload) {
         state.playcategories = [];
-        let result = [...payload];
-        result.forEach(item => {
-          item.show = false;
-        });
-
-        state.playcategories = [...result];
+        state.playcategories = [...payload];
       },
 
       setPlaygrounds(state, payload) {
@@ -42,6 +38,11 @@ const createStore = () => {
       setSearchQuery(state, payload) {
         state.searchQuery = {};
         state.searchQuery = { ...payload };
+      },
+
+      setPlayground(state, payload) {
+        state.playground = {};
+        state.playground = { ...payload };
       }
     },
 
@@ -89,6 +90,17 @@ const createStore = () => {
           let { data } = response;
 
           commit("setSearchResults", data.results);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async getPlayground({ state, commit }, id) {
+        try {
+          let response = await api().get("playgrounds/" + id);
+          let { data } = response;
+
+          commit("setPlayground", data);
         } catch (error) {
           throw error;
         }
