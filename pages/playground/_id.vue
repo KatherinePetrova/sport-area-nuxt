@@ -4,78 +4,115 @@
       class="logo"
       :style="{backgroundImage: `url(${category.photo})`}"
     >{{ category.name.toUpperCase() }}</div>
-    <div class="body">
-      <div class="title">{{ data.name }}</div>
-      <div class="inf">
-        <div class="main_image" :style="{backgroundImage: `url(${data.images[main_image].image})`}"></div>
-        <div style="width: 48%">
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
-            <span class="cost">{{ `от ${data.cost} т` }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
-            <span
-              style="width: 60%; min-width: 00%; color: #707070;"
-            >{{ `${data.location.address}` }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
-            <span
-              style="width: 60%; min-width: 60%; color: #707070;"
-            >{{ `${data.time_from_common_days} - ${data.time_to_common_days}` }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
-            <span
-              style="width: 60%; min-width: 60%; color: #707070;"
-            >{{ `${Math.round(data.width)}х${Math.round(data.length)} м` }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Тип покрытия</span>
-            <span style="width: 60%; min-width: 60%; color: #707070;">{{ `${data.cover_type}` }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Инфраструктура</span>
-            <span style="width: 60%; min-width: 60%; color: #707070;">{{ structure() }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span style="width: 40%; min-width: 40%; color: #707070;">Описание</span>
-            <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
-          </div>
-          <div style="display: flex; margin-bottom: 1em">
-            <span
-              style="width: 100%; min-width: 100%; color: #707070;"
-            >{{ `Контакты: ${data.phone}` }}</span>
-          </div>
+    <transition name="page">
+      <div class="body">
+        <div class="title">{{ data.name }}</div>
+        <div class="book_button">
+          <button>ЗАБРОНИРОВАТЬ</button>
         </div>
-      </div>
-      <div class="inf">
-        <div class="images">
+        <div class="inf">
           <div
-            class="img"
-            v-for="(item, index) in data.images"
-            :key="'img' + index"
-            :style="{marginRight: (index + 1)%3==0 ? '0' : '5%', backgroundImage: `url(${item.image})`}"
-            :class="{active: main_image==index}"
-            @click="main_image=index"
+            class="main_image"
+            :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
           ></div>
+          <div style="width: 48%">
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
+              <span class="cost">{{ `от ${data.cost} т` }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
+              <span
+                style="width: 60%; min-width: 00%; color: #707070;"
+              >{{ `${data.location.address}` }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
+              <span
+                style="width: 60%; min-width: 60%; color: #707070;"
+              >{{ `${data.time_from_common_days} - ${data.time_to_common_days}` }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
+              <span
+                style="width: 60%; min-width: 60%; color: #707070;"
+              >{{ `${Math.round(data.width)}х${Math.round(data.length)} м` }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Тип покрытия</span>
+              <span style="width: 60%; min-width: 60%; color: #707070;">{{ `${data.cover_type}` }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Инфраструктура</span>
+              <span style="width: 60%; min-width: 60%; color: #707070;">{{ structure() }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span style="width: 40%; min-width: 40%; color: #707070;">Описание</span>
+              <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
+            </div>
+            <div style="display: flex; margin-bottom: 1em">
+              <span
+                style="width: 100%; min-width: 100%; color: #707070;"
+              >{{ `Контакты: ${data.phone}` }}</span>
+            </div>
+          </div>
         </div>
-        <div class="map"></div>
+        <div class="inf">
+          <div class="images">
+            <div
+              class="img"
+              v-for="(item, index) in data.images"
+              :key="'img' + index"
+              :style="{marginRight: (index + 1)%3==0 ? '0' : '5%', backgroundImage: `url(${item.image})`}"
+              :class="{active: main_image==index}"
+              @click="main_image=index"
+            ></div>
+          </div>
+          <div class="map"></div>
+        </div>
+        <div class="booking">
+          <div class="title">Бронирование</div>
+          <table border="1">
+            <tr>
+              <td v-for="(item, index) in table.header" :key="'header'+index">
+                <div v-if="item.button">{{ item.title }}</div>
+                <template v-else v-for="(title, tindex) in item.title">
+                  <div :key="'header' + tindex">{{ title }}</div>
+                </template>
+              </td>
+            </tr>
+            <tr v-for="(item, index) in table.result" :key="'result' + index">
+              <td
+                :class="{
+                active: subItem.active && !subItem.is_booked, 
+                booked: subItem.is_booked, 
+                book: subItem.id && !subItem.is_booked
+              }"
+                v-for="(subItem, subIndex) in item"
+                :key="subItem.id + 'td' + subIndex"
+                @click="book(subItem)"
+              >{{ subItem.title }}</td>
+            </tr>
+          </table>
+        </div>
+        <transition-group name="page" class="booked">
+          <span v-for="(item, index) in booked" :key="'booked' + index">
+            <span>{{ `Дата: ${item.date}; Время: ${item.from_time}-${item.to_time}` }}</span>
+            <b-button variant="danger" @click="unbook(item)">Удалить</b-button>
+          </span>
+          <span
+            key="pretotal"
+            style="margin-top: 1em; font-size: 1.5em"
+          >{{ `Итоговая стоимость: ${price.total} т` }}</span>
+          <span key="prepre">{{ `Предоплата ${data.prepay}%: ${price.pre} т` }}</span>
+        </transition-group>
       </div>
-      <div class="booking" @click="createTable()">
-        <div class="title">Бронирование</div>
-        <table border="1">
-          <caption>Бронирование</caption>
-          <tr>
-            <td v-for="(item, index) in createTable()" :key="'cell' + index">{{ item.title }}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
+    </transition>
   </div>
 </template>
 <script>
+import createTable from "~/service/booking.js";
+
 export default {
   async asyncData({ store, params }) {
     await store.dispatch("getPlaycategories");
@@ -86,19 +123,14 @@ export default {
       item => item.id == data.category
     );
 
+    let table = createTable(data.days);
+
     return {
       data,
       category,
       main_image: 0,
-      days: [
-        "Воскресенье",
-        "Понедельник",
-        "Вторник",
-        "Среда",
-        "Четверг",
-        "Пятница",
-        "Суббота"
-      ]
+      table,
+      booked: []
     };
   },
   head() {
@@ -106,7 +138,37 @@ export default {
       title: this.data.name + " | Онлайн бронирование спортивных площадок"
     };
   },
+  computed: {
+    price() {
+      let price = { total: 0, pre: 0 };
+      this.booked.forEach(item => {
+        price.total += item.price;
+      });
+
+      price.pre = Math.round((price.total / 100) * this.data.prepay);
+
+      return price;
+    }
+  },
   methods: {
+    book(item) {
+      if (!item.id || item.is_booked) return;
+
+      item.active = !item.active;
+      if (item.active) {
+        this.booked.push(item);
+      } else {
+        let index = this.booked.findIndex(el => el.id == item.id);
+        this.booked.splice(index, 1);
+      }
+    },
+    unbook(item) {
+      let { x, y } = item.arrayCoor;
+      this.table.result[x][y].active = false;
+
+      let index = this.booked.findIndex(el => el.id == item.id);
+      this.booked.splice(index, 1);
+    },
     structure() {
       let result = "";
       for (let key in this.data) {
@@ -116,34 +178,6 @@ export default {
       }
 
       return result.substr(0, result.length - 2);
-    },
-
-    createTable() {
-      let data = JSON.parse(JSON.stringify(this.data.days));
-      data.forEach(item => {
-        item.date = new Date(item.date);
-        item.title =
-          this.days[item.date.getDay()] +
-          "<br>" +
-          (item.date.getDate() > 10
-            ? item.date.getDate()
-            : "0" + item.date.getDate()) +
-          "." +
-          (item.date.getMonth() + 1 > 10
-            ? item.date.getMonth() + 1
-            : "0" + (item.date.getMonth() + 1));
-      });
-
-      data.sort((a, b) => {
-        if (a.date.getTime() < b.date.getTime()) {
-          return -1;
-        }
-      });
-
-      data.unshift({ title: "Назад" });
-      data.push({ title: "Далее" });
-
-      return data;
     }
   },
   mounted() {
@@ -229,6 +263,41 @@ export default {
   top: -0.6em;
   left: 3em;
 }
+
+.body > .book_button {
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1;
+  letter-spacing: normal;
+
+  background-color: white;
+  color: black;
+
+  position: absolute;
+  bottom: -1em;
+  left: calc(50% - (1em + 3.5em + 1em));
+
+  padding: 0 1em;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 1.5em;
+}
+
+.book_button > button {
+  background-color: #064482;
+  color: white;
+
+  border: none;
+
+  padding: 0.75em 3.5em;
+
+  border-radius: 5px;
+}
+
 .body > .inf {
   width: 100%;
 
@@ -236,6 +305,20 @@ export default {
   justify-content: space-between;
 
   margin-bottom: 3em;
+}
+
+.body > .booked {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  color: #064482;
+
+  padding: 0.5em 1em;
+  font-size: 2em;
+
+  position: relative;
 }
 
 .body > .booking {
@@ -344,11 +427,38 @@ export default {
   letter-spacing: normal;
 }
 
+table {
+  width: 100%;
+  table-layout: fixed;
+  border: solid 1px #e8e7e7;
+  text-align: center;
+
+  font-size: 16px;
+}
+
 td {
-  width: 7em;
-  padding: 0.5em 0;
+  width: auto;
+
+  padding: 1em 0;
   text-align: center;
 
   color: #074582;
+}
+
+td.book {
+  cursor: pointer;
+}
+
+td.book:hover {
+  background-color: rgba(0, 0, 0, 0.16);
+}
+
+td.active {
+  background-color: #bbffbb;
+}
+
+td.booked {
+  background-color: #ffbbbb;
+  color: #0745822f;
 }
 </style>

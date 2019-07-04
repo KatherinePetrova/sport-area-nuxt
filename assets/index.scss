@@ -10,6 +10,11 @@
 .page-leave-active {
   transform: translateX(-10%);
   opacity: 0;
+  position: absolute;
+}
+
+.page-move {
+  transition: transform 1s;
 }
 
 @font-face {

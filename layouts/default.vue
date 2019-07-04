@@ -1,8 +1,8 @@
 <template>
   <div>
-    <header-component/>
-    <nuxt/>
-    <footer-component/>
+    <header-component />
+    <nuxt />
+    <footer-component />
   </div>
 </template>
 <script>
@@ -24,6 +24,8 @@ html {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+
+  transition: 1s;
 }
 
 *,
