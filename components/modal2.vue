@@ -46,7 +46,6 @@ export default {
   justify-content: center;
   align-items: center;
 }
-
 .modal-two-main > .inner-modal {
   height: 80%;
   width: 90%;

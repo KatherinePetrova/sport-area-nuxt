@@ -26,6 +26,8 @@ html {
   box-sizing: border-box;
 
   transition: 1s;
+
+  min-width: 768px;
 }
 
 *,

@@ -1,9 +1,12 @@
 <template>
   <div class="search_main">
-    <div
-      :style="{backgroundImage: `url(${playcategories.find(item => item.id == $route.query.category).photo})`}"
-      class="logo"
-    >{{ playcategories.find(item => item.id == $route.query.category).name.toUpperCase() }}</div>
+    <transition name="page">
+      <div
+        v-if="playcategories.find(item => item.id == $route.query.category)"
+        :style="{backgroundImage: `url(${playcategories.find(item => item.id == $route.query.category).photo})`}"
+        class="logo"
+      >{{ playcategories.find(item => item.id == $route.query.category).name.toUpperCase() }}</div>
+    </transition>
     <div class="filter">
       <button @click="search()">ПРИМЕНИТЬ ФИЛЬТР</button>
       <div class="title">Фильтр</div>
@@ -144,7 +147,6 @@
 <script>
 export default {
   async fetch({ store, query, redirect }) {
-    if (!query.category) redirect("/search?category=1");
     await store.dispatch("getPlaycategories");
   },
   data() {
@@ -194,10 +196,18 @@ export default {
       this.$router.push("/search/" + query);
     },
     clearSearch() {
-      this.$router.push("/search/?category=1");
+      this.$router.push("/search");
     },
     async applySearch(route) {
       this.loading = true;
+
+      for (let key in this.filter) {
+        if (key.includes("is")) {
+          this.filter[key] = false;
+        } else {
+          this.filter[key] = null;
+        }
+      }
 
       let query = { ...route.query };
       for (let key in query) {
@@ -207,7 +217,10 @@ export default {
       this.$store.commit("setSearchQuery", query);
       await this.$store.dispatch("getSearchResults");
 
-      window.scrollTo({ top: 650, behavior: "smooth" });
+      window.scrollTo({
+        top: this.filter.category ? 650 : 400,
+        behavior: "smooth"
+      });
       this.loading = false;
     }
   },
@@ -362,6 +375,8 @@ export default {
   color: #ffffff;
 
   margin: 0.1em 0;
+
+  transition: 0.5s;
 }
 
 .search_main > .filter {

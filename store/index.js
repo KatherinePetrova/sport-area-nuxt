@@ -9,7 +9,8 @@ const createStore = () => {
       news: [],
       searchQuery: {},
       searchResults: [],
-      playground: {}
+      playground: {},
+      user: {}
     },
 
     getters: {},
@@ -43,6 +44,10 @@ const createStore = () => {
       setPlayground(state, payload) {
         state.playground = {};
         state.playground = { ...payload };
+      },
+
+      setUser(state, payload) {
+        (state.user = {}), (state.user = { ...payload });
       }
     },
 
@@ -101,6 +106,57 @@ const createStore = () => {
           let { data } = response;
 
           commit("setPlayground", data);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async register({ state, commit }, payload) {
+        try {
+          let response = await api().get("auth/users/");
+          let { data } = response;
+
+          commit("setUser", data);
+
+          // // response = await api().post(
+          // //   `/auth/users/${state.user.id}/verify/api/auth/`
+          // // );
+          // response = await api().post(`auth/users/18/enter_verify_code/`);
+
+          console.log(response);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async auth({ state, commit }, payload) {
+        try {
+          let response = await api().post("auth/login/", payload);
+          let { data } = response;
+
+          commit("setUser", data);
+        } catch (error) {
+          console.log(error);
+        }
+      },
+
+      async getUser({ state, commit }, id) {
+        try {
+          let response = await api().get(`auth/users/${id}/`);
+          let { data } = response;
+
+          commit("setUser", data);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async updateUser({ state, commit }, payload) {
+        try {
+          let response = await api().get(`auth/users/${payload.id}/`, payload);
+          let { data } = response;
+
+          console.log(data);
         } catch (error) {
           throw error;
         }

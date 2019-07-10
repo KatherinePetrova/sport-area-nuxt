@@ -9,7 +9,7 @@
       <div class="body">
         <div class="title">{{ data.name }}</div>
         <div class="book_button">
-          <button>ЗАБРОНИРОВАТЬ</button>
+          <button>Сделать предоплату</button>
         </div>
         <div class="inf">
           <div
@@ -17,99 +17,13 @@
             :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
           ></div>
           <div style="width: 48%">
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
-              <span class="cost">{{ `от ${data.cost} т` }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
-              <span
-                style="width: 60%; min-width: 00%; color: #707070;"
-              >{{ `${data.location.address}` }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
-              <span
-                style="width: 60%; min-width: 60%; color: #707070;"
-              >{{ `${data.time_from_common_days} - ${data.time_to_common_days}` }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
-              <span
-                style="width: 60%; min-width: 60%; color: #707070;"
-              >{{ `${Math.round(data.width)}х${Math.round(data.length)} м` }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Тип покрытия</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ `${data.cover_type}` }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Инфраструктура</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ structure() }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span style="width: 40%; min-width: 40%; color: #707070;">Описание</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
-            </div>
-            <div style="display: flex; margin-bottom: 1em">
-              <span
-                style="width: 100%; min-width: 100%; color: #707070;"
-              >{{ `Контакты: ${data.phone}` }}</span>
-            </div>
+            <span style="margin-bottom: 1em">Дата и время брони</span>
+            <b-form-input></b-form-input>
           </div>
         </div>
         <div class="inf">
-          <div class="images">
-            <div
-              class="img"
-              v-for="(item, index) in data.images"
-              :key="'img' + index"
-              :style="{marginRight: (index + 1)%3==0 ? '0' : '5%', backgroundImage: `url(${item.image})`}"
-              :class="{active: main_image==index}"
-              @click="main_image=index"
-            ></div>
-          </div>
-          <div class="map"></div>
+          <div class="images">Адрес</div>
         </div>
-        <div class="booking">
-          <div class="title">Бронирование</div>
-          <table border="1">
-            <tr>
-              <td v-for="(item, index) in table.header" :key="'header'+index">
-                <div v-if="item.button">{{ item.title }}</div>
-                <template v-else v-for="(title, tindex) in item.title">
-                  <div :key="'header' + tindex">{{ title }}</div>
-                </template>
-              </td>
-            </tr>
-            <tr v-for="(item, index) in table.result" :key="'result' + index">
-              <td
-                :class="{
-                active: subItem.active && !subItem.is_booked, 
-                booked: subItem.is_booked, 
-                book: subItem.id && !subItem.is_booked
-              }"
-                v-for="(subItem, subIndex) in item"
-                :key="subItem.id + 'td' + subIndex"
-                @click="book(subItem)"
-              >{{ subItem.title }}</td>
-            </tr>
-          </table>
-        </div>
-        <transition-group name="page" class="booked">
-          <span v-for="(item, index) in booked" :key="'booked' + index" style="transition: 0.5s">
-            <span>{{ `Дата: ${item.date}; Время: ${item.from_time}-${item.to_time}` }}</span>
-            <b-button variant="danger" @click="unbook(item)">Удалить</b-button>
-          </span>
-          <span
-            key="pretotal"
-            style="margin-top: 1em; font-size: 1.5em; transition: 0.5s"
-          >{{ `Итоговая стоимость: ${price.total} т` }}</span>
-          <span
-            key="prepre"
-            style="transition: 0.5"
-          >{{ `Предоплата ${data.prepay}%: ${price.pre} т` }}</span>
-        </transition-group>
       </div>
     </transition>
   </div>
@@ -118,23 +32,19 @@
 import createTable from "~/service/booking.js";
 
 export default {
-  async asyncData({ store, params }) {
+  async asyncData({ store, query }) {
     await store.dispatch("getPlaycategories");
-    await store.dispatch("getPlayground", params.id);
+    await store.dispatch("getPlayground", query.playground);
 
     let data = JSON.parse(JSON.stringify(store.state.playground));
     let category = store.state.playcategories.find(
       item => item.id == data.category
     );
 
-    let table = createTable(data.days);
-
     return {
       data,
       category,
-      main_image: 0,
-      table,
-      booked: []
+      main_image: 0
     };
   },
   head() {
@@ -182,11 +92,6 @@ export default {
       }
 
       return result.substr(0, result.length - 2);
-    },
-
-    proceed() {
-      let booked = JSON.stringify(this.booked);
-      document.cookie = `booked=${booked}`;
     }
   },
   mounted() {
@@ -314,6 +219,7 @@ export default {
   justify-content: space-between;
 
   margin-bottom: 3em;
+  color: #064482 !important;
 }
 
 .body > .booked {
