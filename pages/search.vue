@@ -113,33 +113,46 @@
       </div>
     </div>
     <div class="result">
-      <div class="total">
+      <div class="total" :class="{ map }">
         <div class="title">
-          <button class="active">Список</button>
-          <button>Карта</button>
+          <button :class="{active: !map}" @click="map = false">Список</button>
+          <button :class="{active: map}" @click="map = true">Карта</button>
         </div>
-        <transition name="page" mode="in-out">
-          <span v-if="loading" style="color:#064482; font-size: 1.5em ">Загрузка...</span>
-          <span
-            v-if="searchResults.length == 0 && !loading"
-            style="color:#064482; font-size: 1.5em "
-          >Ничего не найдено</span>
-        </transition>
-        <div class="pole_block" v-for="(item, index) in searchResults" :key="index + 'search'">
-          <div
-            class="img"
-            :style="{backgroundImage: item.images.length > 0 ? `url(${item.images[0].image})` : '/img/logo.png'}"
-          ></div>
+        <template v-if="!map">
+          <transition name="page" mode="in-out">
+            <span v-if="loading" style="color:#064482; font-size: 1.5em ">Загрузка...</span>
+            <span
+              v-if="searchResults.length == 0 && !loading"
+              style="color:#064482; font-size: 1.5em "
+            >Ничего не найдено</span>
+          </transition>
+          <div class="pole_block" v-for="(item, index) in searchResults" :key="index + 'search'">
+            <div
+              class="img"
+              :style="{backgroundImage: item.images.length > 0 ? `url(${item.images[0].image})` : '/img/logo.png'}"
+            ></div>
 
-          <div class="content">
-            <span style="font-size: 1.5em">{{ item.name }}</span>
-            <span style="font-size: 1.5em">{{ `от ${item.cost} тг/ч` }}</span>
-            <span>{{ `Адрес - ${item.location.address}` }}</span>
-            <span>{{ `Тип - ${item.type}` }}</span>
-            <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
-            <a :href="`/playground/${item.id}`">Подробнее</a>
+            <div class="content">
+              <span style="font-size: 1.5em">{{ item.name }}</span>
+              <span style="font-size: 1.5em">{{ `от ${item.cost} тг/ч` }}</span>
+              <span>{{ `Адрес - ${item.location.address}` }}</span>
+              <span>{{ `Тип - ${item.type}` }}</span>
+              <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
+              <a :href="`/playground/${item.id}`">Подробнее</a>
+            </div>
           </div>
-        </div>
+        </template>
+        <no-ssr v-else>
+          <yandex-map :coords="mapCenter" style="width: 100%; height: 100%;" zoom="12">
+            <ymap-marker
+              :marker-id="item.location.id"
+              :coords="[item.location.latitude, item.location.longitude]"
+              v-for="(item, index) in searchResults"
+              :key="'ymapmarker' + index"
+              :balloon-template="balloon(item)"
+            ></ymap-marker>
+          </yandex-map>
+        </no-ssr>
       </div>
     </div>
   </div>
@@ -151,6 +164,7 @@ export default {
   },
   data() {
     return {
+      map: false,
       loading: false,
       filter: {
         category: null,
@@ -177,6 +191,29 @@ export default {
     },
     searchResults() {
       return this.$store.state.searchResults;
+    },
+    mapCenter() {
+      let mapCoords = this.searchResults.map(item => {
+        return { x: item.location.latitude, y: item.location.longitude };
+      });
+
+      let max = { x: 0, y: 0 };
+      let min = { x: 9999999, y: 9999999 };
+
+      mapCoords.forEach(item => {
+        if (item.x > max.x) max.x = item.x;
+        if (item.y > max.y) max.y = item.y;
+
+        if (item.x < min.x) min.x = item.x;
+        if (item.y < min.y) min.y = item.y;
+      });
+
+      let center = [
+        parseFloat(min.x) + parseFloat((max.x - min.x) / 2),
+        parseFloat(min.y) + parseFloat((max.y - min.y) / 2)
+      ];
+
+      return center;
     }
   },
   watch: {
@@ -185,6 +222,54 @@ export default {
     }
   },
   methods: {
+    balloon(item) {
+      return `
+        <div 
+          style="
+            width: 100%; 
+            font-size: 14px; 
+            display: flex; 
+            justify-content: space-between;
+            background-color: #ffffff;
+            color: #064482;
+            padding-bottom: 1.25em;"
+        >
+          <div 
+            style="
+              background-image: url('${
+                item.images.length > 0 ? item.images[0].image : null
+              }');
+              width: 40%;
+              max-width: 40%;
+              height: 10em;
+              background-repeat: no-repeat;
+              background-size: cover;
+              background-position: center;"
+          ></div>
+          
+          <div 
+            style="
+              width: 55%;
+              max-width: 55%;
+              display: flex;
+              flex-direction: column;
+              position: relative;"
+          >
+            <span style="font-size: 1.5em">${item.name}</span>
+            <span style="font-size: 1.2em">от ${item.cost} тг/ч</span>
+            <span>Адрес - ${item.location.address}</span>
+            <span>Тип - ${item.type}</span>
+            <span>Размеры - ${Math.round(item.length)}х${Math.round(
+        item.width
+      )} м</span>
+            <a 
+              href="/playground/${item.id}" 
+              style="position: absolute; right: 0; bottom: -1.25em;"
+            >Подробнее</a>
+          </div>
+        </div>`;
+    },
+
     search() {
       let query = "?";
       for (let key in this.filter) {
@@ -195,9 +280,11 @@ export default {
 
       this.$router.push("/search/" + query);
     },
+
     clearSearch() {
       this.$router.push("/search");
     },
+
     async applySearch(route) {
       this.loading = true;
 
@@ -227,6 +314,7 @@ export default {
 
   async mounted() {
     await this.applySearch(this.$route);
+    console.log(this.mapCenter);
   }
 };
 </script>
@@ -266,6 +354,10 @@ export default {
   position: relative;
 }
 
+.result > .map {
+  height: 50em;
+}
+
 .total > .title {
   position: absolute;
 
@@ -300,7 +392,7 @@ export default {
   color: #ffffff;
 }
 
-.total > .pole_block {
+.pole_block {
   width: 100%;
 
   font-size: 14px;

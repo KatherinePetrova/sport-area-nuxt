@@ -4,11 +4,20 @@
     <div class="main">
       <div class="title">Личный кабинет</div>
       <div class="save_button">
-        <button @click="save()">Сохранить</button>
+        <button @click="save()" :disabled="loading">
+          Сохранить
+          <b-spinner small style="margin-right: 0.5em" v-if="loading"></b-spinner>
+        </button>
       </div>
       <div class="cabinet_block">
         <div class="cabinet_group">
-          <b-form-file accept=".jpg, .png, .gif"></b-form-file>
+          <b-form-text style="font-size: 0.4em; color: #064482 !important">Фото пользователя</b-form-text>
+          <input
+            type="file"
+            class="image-uploader"
+            @change="previewFile"
+            :style="{backgroundImage: `url('${user.profile.photo}')`}"
+          />
         </div>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">Имя Фамилия</b-form-text>
@@ -22,30 +31,30 @@
         </div>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">Номер телефона</b-form-text>
-          <b-form-input class="cabinet_input" type="tel" v-model="user.profile.phone"></b-form-input>
+          <b-form-input class="cabinet_input" type="tel" v-model="user.profile.phone" disabled></b-form-input>
         </div>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">Пароль</b-form-text>
-          <b-form-input class="cabinet_input" type="password"></b-form-input>
+          <b-form-input class="cabinet_input" type="password" placeholder="Изменить"></b-form-input>
         </div>
       </div>
       <div class="cabinet_block">
         <label style="font-size: 0.75em">Данные банковской карты</label>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">Номер карты</b-form-text>
-          <b-form-input class="cabinet_input" type="password"></b-form-input>
+          <b-form-input class="cabinet_input" type="password" disabled></b-form-input>
         </div>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">Имя владельца карты</b-form-text>
-          <b-form-input class="cabinet_input" type="password"></b-form-input>
+          <b-form-input class="cabinet_input" type="password" disabled></b-form-input>
         </div>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">Срок действия</b-form-text>
-          <b-form-input class="cabinet_input" type="password"></b-form-input>
+          <b-form-input class="cabinet_input" type="password" disabled></b-form-input>
         </div>
         <div class="cabinet_group">
           <b-form-text style="font-size: 0.4em; color: #064482 !important">CCV</b-form-text>
-          <b-form-input class="cabinet_input" type="password"></b-form-input>
+          <b-form-input class="cabinet_input" type="password" disabled></b-form-input>
         </div>
       </div>
     </div>
@@ -56,10 +65,18 @@ export default {
   async asyncData({ store, redirect }) {
     if (!store.state.user.id) redirect("/");
     let user = JSON.parse(JSON.stringify(store.state.user));
+    user.names = user.first_name + " " + user.last_name;
 
-    return { user };
+    return { user, loading: false };
   },
   methods: {
+    previewFile(event) {
+      let fileReader = new FileReader();
+      fileReader.readAsDataURL(event.target.files[0]);
+
+      this.user.profile.photo = fileReader.result;
+      console.log(this.user);
+    },
     async exit() {
       await this.$router.push("/");
 
@@ -70,24 +87,46 @@ export default {
     },
 
     async save() {
+      this.loading = true;
+
       let payload = {
         id: this.user.id,
         first_name: this.user.names.split(" ")[0],
         last_name: this.user.names.split(" ")[1],
-        phone: this.user.profile.phone,
         photo: this.user.profile.photo
       };
 
-      await this.$store.dispatch("updateUser", payload);
+      for (let key in payload) {
+        if (!payload[key]) delete payload[key];
+      }
+
+      try {
+        await this.$store.dispatch("updateUser", payload);
+
+        this.loading = false;
+      } catch (error) {
+        alert(error.message);
+
+        this.loading = false;
+      }
     }
-  },
-  mounted() {
-    console.log(this.user);
   }
 };
 </script>
 
 <style>
+.image-uploader {
+  height: 15rem;
+  width: 100%;
+
+  background-image: url("/img/logo.png");
+  font-size: 0.00001px;
+
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
 .cabinet_main {
   width: 100%;
 

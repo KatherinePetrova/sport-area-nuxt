@@ -1,3 +1,10 @@
+const YMsettings = {
+  apiKey: "66a3bf5f-3f83-4f27-8bf2-60d57f6e3136",
+  lang: "ru_RU",
+  coordorder: "latlong",
+  version: "2.1"
+};
+
 module.exports = {
   mode: "universal",
   /*
@@ -33,7 +40,8 @@ module.exports = {
    */
   modules: [
     // Doc: https://bootstrap-vue.js.org/docs/
-    "bootstrap-vue/nuxt"
+    "bootstrap-vue/nuxt",
+    ["vue-yandex-maps/nuxt", YMsettings]
   ],
   /*
    ** Build configuration

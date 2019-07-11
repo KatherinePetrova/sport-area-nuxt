@@ -15,14 +15,42 @@
           <div
             class="main_image"
             :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
-          ></div>
-          <div style="width: 48%">
-            <span style="margin-bottom: 1em">Дата и время брони</span>
-            <b-form-input></b-form-input>
+          >
+            <span style="position: absolute; bottom: -3.5em;">{{ data.location.address }}</span>
           </div>
-        </div>
-        <div class="inf">
-          <div class="images">Адрес</div>
+
+          <div class="inputs-block">
+            <span>Дата и время брони</span>
+            <span v-for="(item, index) in booked" :key="'booked-input' + index" class="input-group">
+              <b-form-input
+                disabled
+                :value="`${item.date}\t${item.from_time}-${item.to_time}\t${item.title}`"
+              ></b-form-input>
+              <b-link @click="unbook(item)">X</b-link>
+            </span>
+            <div style="margin-top: 2em">Итоговая стоимость</div>
+            <span class="input-group">
+              <b-form-input disabled :value="price.total + ' тг'"></b-form-input>
+            </span>
+            <div>Предоплата</div>
+            <span class="input-group">
+              <b-form-input disabled :value="price.pre + ' тг'"></b-form-input>
+            </span>
+            <div style="margin-top: 2em">Способ оплаты</div>
+            <span class="input-group">
+              <b-form-select :value="10000"></b-form-select>
+            </span>
+            <div style="margin-top: 2em">Комментарий</div>
+            <span class="input-group">
+              <b-form-textarea
+                id="textarea"
+                v-model="text"
+                placeholder="Enter something..."
+                rows="3"
+                max-rows="6"
+              ></b-form-textarea>
+            </span>
+          </div>
         </div>
       </div>
     </transition>
@@ -32,7 +60,28 @@
 import createTable from "~/service/booking.js";
 
 export default {
-  async asyncData({ store, query }) {
+  watch: {
+    booked(newValue) {
+      if (newValue.length == 0) {
+        this.$router.go(-1);
+      }
+    }
+  },
+  beforeMount() {
+    let cookie = document.cookie.split("; ");
+    let objCookie = {};
+
+    cookie.forEach(item => {
+      objCookie[item.split("=")[0]] = item.split("=")[1];
+    });
+
+    if (objCookie.booked) {
+      this.booked = JSON.parse(objCookie.booked);
+    }
+  },
+  async asyncData({ store, query, redirect }) {
+    if (!query.playground) redirect("/");
+
     await store.dispatch("getPlaycategories");
     await store.dispatch("getPlayground", query.playground);
 
@@ -44,7 +93,8 @@ export default {
     return {
       data,
       category,
-      main_image: 0
+      main_image: 0,
+      booked: []
     };
   },
   head() {
@@ -65,33 +115,9 @@ export default {
     }
   },
   methods: {
-    book(item) {
-      if (!item.id || item.is_booked) return;
-
-      item.active = !item.active;
-      if (item.active) {
-        this.booked.push(item);
-      } else {
-        let index = this.booked.findIndex(el => el.id == item.id);
-        this.booked.splice(index, 1);
-      }
-    },
     unbook(item) {
-      let { x, y } = item.arrayCoor;
-      this.table.result[x][y].active = false;
-
       let index = this.booked.findIndex(el => el.id == item.id);
       this.booked.splice(index, 1);
-    },
-    structure() {
-      let result = "";
-      for (let key in this.data) {
-        if (key.includes("is") && this.data[key]) {
-          result += key.substr(3, key.length) + ", ";
-        }
-      }
-
-      return result.substr(0, result.length - 2);
     }
   },
   mounted() {
@@ -270,110 +296,64 @@ export default {
   width: 50%;
   max-width: 50%;
 
-  height: 35em;
+  height: 17em;
 
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+
+  position: relative;
+
+  margin-bottom: 4em;
+  font-size: 2em;
+
+  color: #707070;
 }
 
-.inf > .images {
-  display: block;
-
-  width: 50%;
-  max-width: 50%;
-}
-
-.inf > .active {
-  border: solid 1px #064482;
-}
-
-.inf > .map {
+.inf > .inputs-block {
   width: 48%;
-  height: 22em;
+  padding-right: 2em;
+  position: relative;
+}
 
-  box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
+.inputs-block > span.input-group {
+  display: flex;
+  align-items: center;
+}
+
+span.input-group > input {
+  color: #064482 !important;
+  margin: 0.5em;
+}
+
+span.input-group > select {
+  color: #064482 !important;
+  margin: 0.5em;
+}
+
+span.input-group > textarea {
+  color: #064482 !important;
+  margin: 0.5em;
+
   border: solid 1px #064482;
-
-  border-radius: 36px;
+  border-radius: 0;
 }
 
-.images > .img {
-  height: 10em;
-  width: 30%;
+span.input-group > a {
+  position: absolute;
+  right: -2em;
 
-  float: left;
-
-  margin-right: 5%;
-  margin-bottom: 2em;
-
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-
-  background-image: url("/img/pole1.jpg");
-
-  box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
-
-  cursor: pointer;
-
-  transition: 1s;
-}
-
-.images > .img:hover {
-  box-shadow: 0 13px 16px 0 rgba(0, 0, 0, 0.8);
-}
-
-.images > .active {
   border: solid 1px #064482;
-}
+  border-radius: 50%;
 
-.cost {
-  width: 60%;
-  min-width: 60%;
-  backdrop-filter: blur(30px);
-  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-  color: #074582;
-  font-size: 3em;
-  font-weight: normal;
-  font-style: normal;
-  font-stretch: normal;
-  line-height: 1.19;
-  letter-spacing: normal;
-}
+  width: 2em;
+  height: 2em;
 
-table {
-  width: 100%;
-  table-layout: fixed;
-  border: solid 1px #e8e7e7;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  font-size: 16px;
-}
-
-td {
-  width: auto;
-
-  padding: 1em 0;
-  text-align: center;
-
-  color: #074582;
-}
-
-td.book {
-  cursor: pointer;
-}
-
-td.book:hover {
-  background-color: rgba(0, 0, 0, 0.16);
-}
-
-td.active {
-  background-color: #bbffbb;
-}
-
-td.booked {
-  background-color: #ffbbbb;
-  color: #0745822f;
+  text-decoration: none;
+  color: #064482 !important;
 }
 </style>

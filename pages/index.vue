@@ -56,7 +56,7 @@
               }"
             >
               <div class="text-center mt-2" v-for="(item, index) in news" :key="index+'new'">
-                <div class="news fdb-box pt-5 p-4">
+                <div class="news fdb-box pt-5 p-4" style="overflow: hidden">
                   {{ item.title }}
                   <p class="lead">{{ item.content }}</p>
                   <p class="align-bottom more mt-5 mb-5">{{ item.author }}</p>

@@ -48,6 +48,7 @@ const createStore = () => {
 
       setUser(state, payload) {
         (state.user = {}), (state.user = { ...payload });
+        console.log(payload);
       }
     },
 
@@ -136,7 +137,7 @@ const createStore = () => {
 
           commit("setUser", data);
         } catch (error) {
-          console.log(error);
+          throw error;
         }
       },
 
@@ -153,10 +154,14 @@ const createStore = () => {
 
       async updateUser({ state, commit }, payload) {
         try {
-          let response = await api().get(`auth/users/${payload.id}/`, payload);
-          let { data } = response;
+          let { id } = payload;
+          delete payload.id;
 
-          console.log(data);
+          let response = await api().put(`auth/users/${id}/`, payload, {
+            headers: { Authorization: `Token ${state.user.token}` }
+          });
+
+          let { data } = response;
         } catch (error) {
           throw error;
         }

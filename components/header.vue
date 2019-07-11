@@ -32,6 +32,7 @@
               <label>Авторизация</label>
               <b-form-input placeholder="Логин" v-model="modals.login.username"></b-form-input>
               <b-form-input placeholder="Пароль" v-model="modals.login.password" type="password"></b-form-input>
+              <b-form-invalid-feedback :state="modals.login.validation">Неверный логин или пароль</b-form-invalid-feedback>
               <b-link style="margin-bottom: 2em">Забыли пароль</b-link>
               <b-button
                 type="submit"
@@ -42,6 +43,7 @@
               >
                 <b-spinner small style="margin-right: 0.5em" v-if="form_loading"></b-spinner>Войти
               </b-button>
+
               <b-button class="form_button" @click="open('register')" variant="info">Регистрация</b-button>
             </b-form>
           </b-modal>
@@ -102,8 +104,14 @@ export default {
       objCookie[item.split("=")[0]] = item.split("=")[1];
     });
 
-    if (objCookie.user_id) {
+    if (objCookie.user_id && objCookie.user_id != "undefined") {
       await this.$store.dispatch("getUser", objCookie.user_id);
+
+      let user = { ...this.$store.state.user };
+      user.token = objCookie.token;
+
+      this.$store.commit("setUser", user);
+
       this.loading = false;
     } else {
       this.loading = false;
@@ -125,17 +133,17 @@ export default {
         let payload = JSON.parse(JSON.stringify(this.modals.login));
 
         delete payload.show;
+        delete payload.validation;
         await this.$store.dispatch("auth", payload);
 
         this.modals.login.show = false;
-        console.log(this.user);
 
         document.cookie = `token=${this.user.token}`;
         document.cookie = `user_id=${this.user.id}`;
 
         this.form_loading = false;
       } catch (error) {
-        throw error;
+        this.modals.login.validation = false;
         this.form_loading = false;
       }
     },
@@ -169,7 +177,8 @@ export default {
         login: {
           show: false,
           username: null,
-          password: null
+          password: null,
+          validation: true
         },
         register: {
           show: false,

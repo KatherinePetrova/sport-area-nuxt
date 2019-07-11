@@ -9,7 +9,7 @@
       <div class="body">
         <div class="title">{{ data.name }}</div>
         <div class="book_button">
-          <button>ЗАБРОНИРОВАТЬ</button>
+          <button @click="proceed()" :disabled="booked.length == 0">ЗАБРОНИРОВАТЬ</button>
         </div>
         <div class="inf">
           <div
@@ -69,7 +69,20 @@
               @click="main_image=index"
             ></div>
           </div>
-          <div class="map"></div>
+          <div class="map">
+            <no-ssr>
+              <yandex-map
+                :coords="[data.location.latitude, data.location.longitude]"
+                style="width: 100%; height: 100%;"
+                zoom="13"
+              >
+                <ymap-marker
+                  :marker-id="data.location.id"
+                  :coords="[data.location.latitude, data.location.longitude]"
+                ></ymap-marker>
+              </yandex-map>
+            </no-ssr>
+          </div>
         </div>
         <div class="booking">
           <div class="title">Бронирование</div>
@@ -129,6 +142,8 @@ export default {
 
     let table = createTable(data.days);
 
+    console.log(data);
+
     return {
       data,
       category,
@@ -187,10 +202,13 @@ export default {
     proceed() {
       let booked = JSON.stringify(this.booked);
       document.cookie = `booked=${booked}`;
+
+      this.$router.push(`/book?playground=${this.data.id}`);
     }
   },
   mounted() {
     window.scrollTo({ top: 300, behavior: "smooth" });
+    console.log(this);
   }
 };
 </script>
@@ -390,6 +408,8 @@ export default {
   border: solid 1px #064482;
 
   border-radius: 36px;
+
+  overflow: hidden;
 }
 
 .images > .img {
