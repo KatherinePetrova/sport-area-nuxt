@@ -1,12 +1,12 @@
 <template>
   <div class="modal-two-main">
-    <div class="inner-modal">
+    <div class="inner-modal" :style="{ padding: data.length > 0 ? '1em 0' : '3em' }">
       <div class="total">{{ `Всего ${total} объекта`.toUpperCase() }}</div>
       <div
         class="more_abs"
-        @click.stop="$router.push(`/search?category=${category_id}`)"
+        @click.stop="$router.push(`/search/?category=${category_id}`)"
       >ПОСМОТРЕТЬ ЕЩЕ</div>
-      <div class="pole_block" v-for="(item, index) in data" :key="index+'pole_block'">
+      <div class="pole_block" v-for="(item, index) in adaptData" :key="index+'pole_block'">
         <div
           class="img"
           :style="{backgroundImage: item.images.length > 0 ? `url(${item.images[0].image})` : '/img/logo.png' }"
@@ -16,8 +16,10 @@
           <span style="font-size: 1.5em">{{ `от ${item.cost} тг/ч` }}</span>
           <span>{{ `Адрес - ${item.location.address}` }}</span>
           <span>{{ `Тип - ${item.type}` }}</span>
-          <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
-          <a :href="`/playground/${item.id}`" @click.stop>Подробнее</a>
+          <span
+            style="margin-bottom: 1.5em"
+          >{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
+          <nuxt-link :to="`/playground/${item.id}`" @click.stop>Подробнее</nuxt-link>
         </div>
       </div>
     </div>
@@ -25,16 +27,32 @@
 </template>
 <script>
 export default {
-  props: ["data", "category_id", "total"]
+  props: ["data", "category_id", "total"],
+  data() {
+    return {
+      docWidth: 0
+    };
+  },
+  computed: {
+    adaptData() {
+      if (this.docWidth < 767) {
+        return this.data.slice(0, 2);
+      } else {
+        return this.data;
+      }
+    }
+  },
+  beforeMount() {
+    this.docWidth = document.documentElement.offsetWidth;
+  }
 };
 </script>
 <style scoped>
 .modal-two-main {
-  margin-top: 0.5rem;
-  margin-left: 3rem;
-  margin-bottom: 3em;
+  margin-left: 3em;
 
-  height: 25rem;
+  padding: 2em;
+
   width: 80%;
 
   border-radius: 30px;
@@ -46,9 +64,9 @@ export default {
   justify-content: center;
   align-items: center;
 }
+
 .modal-two-main > .inner-modal {
-  height: 80%;
-  width: 90%;
+  width: 100%;
 
   border-radius: 15px;
   border: solid 1px #1e568e;
@@ -87,6 +105,7 @@ export default {
   right: 1.75em;
 
   padding: 0 0.5em;
+  cursor: pointer;
 }
 
 .inner-modal > .more_abs:hover {
@@ -113,7 +132,7 @@ export default {
 }
 
 .pole_block > .img {
-  height: 100%;
+  height: auto;
   width: 40%;
 
   background-image: url("/img/pole1.jpg");
@@ -154,8 +173,83 @@ export default {
   font-size: 1.1em;
 
   position: absolute;
-  bottom: 0;
+  bottom: 0.25em;
   right: 0;
+}
+
+@media (max-width: 767px) {
+  .modal-two-main {
+    margin: 0;
+
+    width: 100%;
+
+    height: auto;
+    padding: 1em 0;
+
+    border-radius: 0;
+  }
+
+  .modal-two-main > .inner-modal {
+    height: auto;
+    padding: 0;
+    padding-bottom: 2em;
+
+    border-radius: 0;
+  }
+
+  .inner-modal > .pole_block {
+    width: 100%;
+
+    padding: 0;
+    margin: 0;
+    margin-bottom: 1em;
+    padding-bottom: 2em;
+
+    position: relative;
+  }
+
+  .pole_block > .img {
+    height: auto;
+  }
+
+  .pole_block > .content {
+    padding: 0;
+
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .inner-modal > .total {
+    font-size: 1rem;
+    left: 1em;
+    padding: 0 0.1em;
+  }
+
+  .inner-modal > .more_abs {
+    font-size: 1rem;
+
+    padding: 0.5em 0;
+
+    width: 100%;
+    right: 0;
+    bottom: -1em;
+  }
+
+  .content > a {
+    bottom: -3em;
+    left: -82%;
+    right: auto;
+
+    padding: 0.75em 0;
+    width: 182%;
+    text-align: center;
+
+    margin: 0;
+
+    background: #064482;
+    color: white;
+  }
 }
 </style>
 

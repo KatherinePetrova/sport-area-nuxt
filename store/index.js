@@ -1,5 +1,6 @@
 import Vuex from "vuex";
 import api from "~/service/api.js";
+import { verify } from "crypto";
 
 const createStore = () => {
   return new Vuex.Store({
@@ -10,7 +11,18 @@ const createStore = () => {
       searchQuery: {},
       searchResults: [],
       playground: {},
-      user: {}
+      user: {},
+      single_new: {},
+      modals: {
+        login: false,
+        register: false
+      },
+
+      myBooks: [],
+      success: {
+        show: false,
+        message: ""
+      }
     },
 
     getters: {},
@@ -48,7 +60,29 @@ const createStore = () => {
 
       setUser(state, payload) {
         (state.user = {}), (state.user = { ...payload });
-        console.log(payload);
+      },
+
+      setSingle_new(state, payload) {
+        state.single_new = {};
+        state.single_new = payload;
+      },
+
+      setModals(state, payload) {
+        state.modals = { login: false, register: false };
+        state.modals = { ...payload };
+      },
+
+      setMyBooks(state, payload) {
+        state.myBooks = [];
+        state.myBooks = [...payload];
+        state.myBooks.forEach(item => {
+          item.clicked = false;
+        });
+      },
+
+      setSuccess(state, payload) {
+        state.success.show = payload.show;
+        if (payload.message) state.success.message = payload.message;
       }
     },
 
@@ -114,20 +148,30 @@ const createStore = () => {
 
       async register({ state, commit }, payload) {
         try {
-          let response = await api().get("auth/users/");
+          let response = await api().post("auth/users/", payload);
           let { data } = response;
 
           commit("setUser", data);
-
-          // // response = await api().post(
-          // //   `/auth/users/${state.user.id}/verify/api/auth/`
-          // // );
-          // response = await api().post(`auth/users/18/enter_verify_code/`);
-
-          console.log(response);
         } catch (error) {
           throw error;
         }
+      },
+
+      async sendVerify({ state }) {
+        try {
+          let response = await api().post(
+            `/auth/users/${state.user.id}/verify/`
+          );
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async verify({ state }, payload) {
+        let response = await api().post(
+          `auth/users/${state.user.id}/enter_verify_code/`,
+          payload
+        );
       },
 
       async auth({ state, commit }, payload) {
@@ -143,7 +187,12 @@ const createStore = () => {
 
       async getUser({ state, commit }, id) {
         try {
-          let response = await api().get(`auth/users/${id}/`);
+          let response = await api().get(`auth/users/${id}/`, {
+            headers: {
+              Authorization: `Token ${state.user.token}`,
+              "Content-Type": "multipart/form-data"
+            }
+          });
           let { data } = response;
 
           commit("setUser", data);
@@ -155,15 +204,102 @@ const createStore = () => {
       async updateUser({ state, commit }, payload) {
         try {
           let { id } = payload;
-          delete payload.id;
+          payload = payload.form;
 
           let response = await api().put(`auth/users/${id}/`, payload, {
-            headers: { Authorization: `Token ${state.user.token}` }
+            headers: {
+              Authorization: `Token ${state.user.token}`,
+              "Content-Type": "multipart/form-data"
+            }
           });
 
           let { data } = response;
         } catch (error) {
           throw error;
+        }
+      },
+
+      async getSingle_new({ state, commit }, payload) {
+        try {
+          let response = await api().get(`news/${payload}/`);
+
+          let { data } = response;
+          commit("setSingle_new", data);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async Book({ state, commit }, payload) {
+        try {
+          let response = await api().post("/book/", payload, {
+            headers: {
+              Authorization: `Token ${state.user.token}`
+            }
+          });
+
+          let { data } = response;
+
+          return data;
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async getMyBooks({ state, commit }) {
+        try {
+          let response = await api().get("/my_bookings/", {
+            headers: {
+              Authorization: `Token ${state.user.token}`
+            }
+          });
+
+          let { data } = response;
+          commit("setMyBooks", data.results);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async getCities() {
+        try {
+          let response = await api().get("cities/");
+
+          let { data } = response;
+
+          return data.results;
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async changePassword({ state }, payload) {
+        try {
+          let response = await api().post(`auth/change_password/`, payload, {
+            headers: {
+              Authorization: `Token ${state.user.token}`,
+              "Content-Type": "multipart/form-data"
+            }
+          });
+
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async addPlayground({ state }, payload) {
+        try {
+          let response = await api().post("playgrounds/", payload, {
+            headers: {
+              Authorization: `Token ${state.user.token}`,
+              "Content-Type": "multipart/form-data"
+            }
+          });
+
+          console.log(response);
+        } catch (error) {
+          console.log(error.response);
         }
       }
     }

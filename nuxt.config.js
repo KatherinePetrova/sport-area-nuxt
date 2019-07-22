@@ -10,6 +10,9 @@ module.exports = {
   /*
    ** Headers of the page
    */
+  env: {
+    baseUrl: process.env.BASE_URL || "http://localhost:3000"
+  },
   head: {
     title: process.env.npm_package_name || "",
     meta: [
@@ -26,7 +29,7 @@ module.exports = {
   /*
    ** Customize the progress-bar color
    */
-  loading: { color: "#fff" },
+  loading: "components/loading.vue",
   /*
    ** Global CSS
    */

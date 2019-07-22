@@ -9,7 +9,7 @@
       <div class="body">
         <div class="title">{{ data.name }}</div>
         <div class="book_button">
-          <button>Сделать предоплату</button>
+          <b-link :href="paylink">Сделать предоплату</b-link>
         </div>
         <div class="inf">
           <div
@@ -21,12 +21,11 @@
 
           <div class="inputs-block">
             <span>Дата и время брони</span>
-            <span v-for="(item, index) in booked" :key="'booked-input' + index" class="input-group">
+            <span class="input-group" v-if="booked.length > 0">
               <b-form-input
                 disabled
-                :value="`${item.date}\t${item.from_time}-${item.to_time}\t${item.title}`"
+                :value="`${booked[0].date}\t${booked[0].from_time}-${booked[booked.length-1].to_time}`"
               ></b-form-input>
-              <b-link @click="unbook(item)">X</b-link>
             </span>
             <div style="margin-top: 2em">Итоговая стоимость</div>
             <span class="input-group">
@@ -38,17 +37,13 @@
             </span>
             <div style="margin-top: 2em">Способ оплаты</div>
             <span class="input-group">
-              <b-form-select :value="10000"></b-form-select>
+              <b-form-select disabled value="1">
+                <option value="1">Картой</option>
+              </b-form-select>
             </span>
             <div style="margin-top: 2em">Комментарий</div>
             <span class="input-group">
-              <b-form-textarea
-                id="textarea"
-                v-model="text"
-                placeholder="Enter something..."
-                rows="3"
-                max-rows="6"
-              ></b-form-textarea>
+              <b-form-textarea id="textarea" rows="3" max-rows="6"></b-form-textarea>
             </span>
           </div>
         </div>
@@ -57,7 +52,7 @@
   </div>
 </template>
 <script>
-import createTable from "~/service/booking.js";
+import md5 from "~/service/md5.js";
 
 export default {
   watch: {
@@ -78,6 +73,10 @@ export default {
     if (objCookie.booked) {
       this.booked = JSON.parse(objCookie.booked);
     }
+
+    if (objCookie.order_id) {
+      this.order_id = objCookie.order_id;
+    }
   },
   async asyncData({ store, query, redirect }) {
     if (!query.playground) redirect("/");
@@ -94,7 +93,8 @@ export default {
       data,
       category,
       main_image: 0,
-      booked: []
+      booked: [],
+      order_id: null
     };
   },
   head() {
@@ -103,6 +103,9 @@ export default {
     };
   },
   computed: {
+    user() {
+      return this.$store.state.user;
+    },
     price() {
       let price = { total: 0, pre: 0 };
       this.booked.forEach(item => {
@@ -112,6 +115,62 @@ export default {
       price.pre = Math.round((price.total / 100) * this.data.prepay);
 
       return price;
+    },
+    paylink() {
+      if (this.booked.length == 0) return;
+
+      let pg_description =
+        `${this.data.name}, ` +
+        `${this.booked[0].date} ` +
+        `${this.booked[0].from_time}-${this.booked[this.booked.length - 1].to_time}, ` +
+        `${this.data.location.address}`;
+
+      let success = {
+        sum: this.price.pre,
+        date: `${this.booked[0].date}`,
+        time: `${this.booked[0].from_time}-${this.booked[this.booked.length - 1].to_time}`,
+        name: this.data.name,
+        address: this.data.location.address
+      };
+
+      let paybox = {
+        pg_merchant_id: 517131,
+        pg_description,
+        pg_amount: this.price.pre,
+        pg_order_id: this.order_id,
+        pg_salt: "40d9fgdflgkdf8",
+        pg_success_url: `${
+          process.env.baseUrl
+        }?payment_success=${JSON.stringify(success)}`,
+        pg_testing_mode: 1,
+        pg_user_phone: this.user.profile.phone,
+        pg_user_contact_email: this.user.email
+      };
+
+      let secret_key = "KyOKkJmCaDxPKmCU";
+
+      let ordered = {};
+      Object.keys(paybox)
+        .sort()
+        .forEach(function(key) {
+          ordered[key] = paybox[key];
+        });
+
+      let sign = "payment.php;";
+      for (let key in ordered) {
+        sign += `${ordered[key]};`;
+      }
+      sign += secret_key;
+
+      paybox.pg_sig = md5(sign);
+
+      let result = "https://api.paybox.money/payment.php?";
+
+      for (let key in paybox) {
+        result += `${key}=${paybox[key]}&`;
+      }
+
+      return result;
     }
   },
   methods: {
@@ -227,15 +286,20 @@ export default {
   font-size: 1.5em;
 }
 
-.book_button > button {
+.book_button > a {
   background-color: #064482;
   color: white;
+  text-decoration: none;
 
   border: none;
 
   padding: 0.75em 3.5em;
 
   border-radius: 5px;
+}
+
+.book_button > a:hover {
+  background-color: #4783be;
 }
 
 .body > .inf {
@@ -355,5 +419,20 @@ span.input-group > a {
 
   text-decoration: none;
   color: #064482 !important;
+}
+
+@media (max-width: 767px) {
+  .body > .inf {
+    flex-direction: column;
+  }
+
+  .inf > div {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .body > .book_button {
+    left: calc(50% - (1em + 3.5em + 4em));
+  }
 }
 </style>

@@ -29,30 +29,16 @@
           <span>Предположительное время игры</span>
           <span style="display: flex; align-items: center">
             с
-            <b-form-input
-              v-model="filter.time_from"
-              placeholder="ЧЧ/ММ"
-              style="margin: 0 1em; width: 5.5em; font-size: 12px"
-            ></b-form-input>до
-            <b-form-input
-              v-model="filter.time_to"
-              placeholder="ЧЧ/ММ"
-              style="margin: 0 1em; width: 5.5em; font-size: 12px"
-            ></b-form-input>
+            <b-form-input v-model="filter.time_from" placeholder="ЧЧ/ММ" style="margin: 0 0.5em"></b-form-input>до
+            <b-form-input v-model="filter.time_to" placeholder="ЧЧ/ММ" style="margin: 0 0.5em"></b-form-input>
           </span>
         </div>
         <div class="time">
           <span>Стоимость, т</span>
           <span style="display: flex; align-items: center">
             от
-            <b-form-input
-              style="margin: 0 1em; width: 5.5em; font-size: 12px"
-              v-model="filter.cost_from"
-            ></b-form-input>до
-            <b-form-input
-              style="margin: 0 1em; width: 5.5em; font-size: 12px"
-              v-model="filter.cost_to"
-            ></b-form-input>
+            <b-form-input style="margin: 0 0.5em" v-model="filter.cost_from"></b-form-input>до
+            <b-form-input style="margin: 0 0.5em" v-model="filter.cost_to"></b-form-input>
           </span>
         </div>
         <b-form-select v-model="filter.order_by">
@@ -61,6 +47,14 @@
           <option value="old">По дате - сначала старые</option>
           <option value="cost_inc">По цене - возрастанию</option>
           <option value="cost_dec">По цене - убыванию</option>
+        </b-form-select>
+        <b-form-select v-model="filter.city">
+          <option :value="null" disabled>Выберите город</option>
+          <option
+            :value="item.id"
+            v-for="(item, index) in cities"
+            :key="'city-option' + index"
+          >{{ item.name }}</option>
         </b-form-select>
       </div>
       <div class="block">
@@ -105,11 +99,7 @@
           class="checkbox"
           v-model="filter.is_parking"
         >Парковка</b-form-checkbox>
-        <a
-          href="/"
-          @click.prevent="clearSearch()"
-          style="position: absolute; bottom: 0; left: 0"
-        >Сбросить фильтр</a>
+        <a href="/" @click.prevent="clearSearch()" style>Сбросить фильтр</a>
       </div>
     </div>
     <div class="result">
@@ -137,8 +127,10 @@
               <span style="font-size: 1.5em">{{ `от ${item.cost} тг/ч` }}</span>
               <span>{{ `Адрес - ${item.location.address}` }}</span>
               <span>{{ `Тип - ${item.type}` }}</span>
-              <span>{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
-              <a :href="`/playground/${item.id}`">Подробнее</a>
+              <span
+                style="margin-bottom: 1em"
+              >{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
+              <nuxt-link :to="`/playground/${item.id}`">Подробнее</nuxt-link>
             </div>
           </div>
         </template>
@@ -159,8 +151,11 @@
 </template>
 <script>
 export default {
-  async fetch({ store, query, redirect }) {
+  async asyncData({ store, query, redirect }) {
     await store.dispatch("getPlaycategories");
+    let cities = await store.dispatch("getCities");
+
+    return { cities };
   },
   data() {
     return {
@@ -181,7 +176,8 @@ export default {
         time_from: null,
         time_to: null,
         cost_from: null,
-        cost_to: null
+        cost_to: null,
+        city: null
       }
     };
   },
@@ -314,7 +310,6 @@ export default {
 
   async mounted() {
     await this.applySearch(this.$route);
-    console.log(this.mapCenter);
   }
 };
 </script>
@@ -414,7 +409,7 @@ export default {
   width: 40%;
   max-width: 40%;
 
-  height: 10em;
+  height: auto;
 
   background-image: url("/img/logo.png");
   background-repeat: no-repeat;
@@ -449,7 +444,7 @@ export default {
   border-radius: 39px;
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
 
-  font-size: 3em;
+  font-size: 6em;
 
   padding: 0 0.5em;
 
@@ -458,7 +453,6 @@ export default {
 
   text-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
   /* font-family: "Century Gothic"; */
-  font-size: 119px;
   font-weight: bold;
   font-style: normal;
   font-stretch: normal;
@@ -562,6 +556,12 @@ export default {
   top: -1.75em;
 }
 
+.block > a {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
 .filter > button {
   font-size: 16px;
 
@@ -590,5 +590,92 @@ export default {
 
 .filter > button:active {
   bottom: -1.2em;
+}
+
+@media (max-width: 767px) {
+  * {
+    border-radius: 0 !important;
+  }
+
+  .search_main {
+    padding: 0;
+  }
+
+  .search_main > .logo {
+    margin: 0;
+  }
+
+  .search_main > .filter {
+    flex-direction: column;
+    padding-bottom: 2em;
+  }
+
+  .filter > .block {
+    width: 100%;
+    max-width: 100%;
+
+    margin: 1em 0;
+  }
+
+  .filter > button {
+    left: auto;
+  }
+
+  .block > select {
+    width: 100%;
+    margin: 0;
+    margin-bottom: 1em;
+  }
+
+  .block > .checkbox {
+    margin: 0;
+    margin-bottom: 0.5em;
+  }
+
+  .block > a {
+    bottom: -2em;
+    left: 0;
+    right: 0;
+  }
+
+  .result > .total {
+    width: 100%;
+    max-width: 100%;
+
+    padding: 3em 0;
+  }
+
+  .search_main > .logo {
+    font-size: 3em;
+  }
+
+  .search_main > .filter {
+    width: 100%;
+  }
+
+  .block > .time {
+    width: 100%;
+    float: none;
+
+    margin: 0;
+    margin-bottom: 1em;
+  }
+
+  .pole_block {
+    padding: 0;
+    padding-bottom: 3em;
+  }
+
+  .content > a {
+    bottom: -3em;
+    padding: 0.8em;
+
+    width: 182%;
+
+    text-align: center;
+
+    background-color: #064482;
+    color: white;
+  }
 }
 </style>

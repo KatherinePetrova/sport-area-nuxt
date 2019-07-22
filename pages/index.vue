@@ -4,10 +4,10 @@
       <div class="container">
         <div class="col-lg-12 mt-5 box-1" :style="{ border: '1px solid #064482' }">
           <h1 class="font-weight-light">
-            <span>ВЫБЕРИТЕ ВИД СПОРТА</span>
+            <span class="title">ВЫБЕРИТЕ ВИД СПОРТА</span>
           </h1>
 
-          <a
+          <div
             v-for="(item, index) in sports"
             :key="index+'sport'"
             @click.prevent="expandSport(index)"
@@ -16,7 +16,8 @@
               :ref="'sport' + index"
               :style="{ 
                 backgroundImage: `url(${item.photo})`,
-                marginBottom: item.show ? '5rem!important' : '1rem!important'
+                
+                cursor: item.show ? 'default' : 'pointer'
               }"
               class="col-lg-12 box text-white my-2 py-4 text-center expandSport"
             >
@@ -32,7 +33,7 @@
                 />
               </transition>
             </div>
-          </a>
+          </div>
         </div>
       </div>
     </section>
@@ -55,11 +56,20 @@
                 arrows: false
               }"
             >
-              <div class="text-center mt-2" v-for="(item, index) in news" :key="index+'new'">
-                <div class="news fdb-box pt-5 p-4" style="overflow: hidden">
+              <div
+                class="text-center mt-2"
+                v-for="(item, index) in news"
+                :key="index+'new'"
+                style="cursor: pointer"
+                @click="$router.push(`/news/${item.id}`)"
+              >
+                <div
+                  class="news fdb-box pt-5 p-4"
+                  style="overflow: hidden; background-size: cover; background-position: center"
+                  :style="{backgroundImage: item.images.length > 0 ? `url(${item.images[0].image})` : 'url(/img/news.png)'}"
+                >
                   {{ item.title }}
-                  <p class="lead">{{ item.content }}</p>
-                  <p class="align-bottom more mt-5 mb-5">{{ item.author }}</p>
+                  <div class="lead" style="overflow: hidden; max-height: 3em">{{ item.content }}</div>
                 </div>
               </div>
             </vue-slick>
@@ -108,7 +118,7 @@ import api from "~/service/api.js";
 
 export default {
   components: { ModalComponent, ModalComponentTwo },
-  async asyncData({ store }) {
+  async asyncData({ store, query }) {
     await store.dispatch("getPlaycategories");
     await store.dispatch("getNews");
 
@@ -123,7 +133,15 @@ export default {
       sports[i].playgrounds = data.results.slice(0, 4);
     }
 
-    return { sports };
+    let successMessage = null;
+
+    if (query.payment_success) {
+      let success = JSON.parse(query.payment_success);
+
+      successMessage = `Предоплата брони ${success.name}, ${success.date} ${success.time} на сумму ${success.sum} тг прошла успешно.\n\nЗайдите в личный кабинет, чтобы узнать подоброную информацию`;
+    }
+
+    return { sports, successMessage };
   },
   computed: {
     news() {
@@ -147,6 +165,14 @@ export default {
           this.sports[i].show = false;
         }
       }
+    }
+  },
+  mounted() {
+    if (this.successMessage) {
+      this.$store.commit("setSuccess", {
+        show: true,
+        message: this.successMessage
+      });
     }
   }
 };
@@ -186,5 +212,28 @@ export default {
   display: flex;
   justify-content: center;
   margin-top: 0.5em;
+}
+
+@media (max-width: 768px) {
+  * {
+    border-radius: 0 !important;
+  }
+
+  span.title {
+    padding: 0 !important;
+  }
+
+  .container {
+    padding: 0;
+  }
+
+  .box-1 {
+    padding: 0 !important;
+  }
+
+  .expandSport {
+    border-radius: 0 !important;
+    padding: 0;
+  }
 }
 </style>

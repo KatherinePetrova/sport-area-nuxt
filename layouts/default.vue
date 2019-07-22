@@ -1,5 +1,6 @@
 <template>
   <div>
+    <success />
     <header-component />
     <nuxt />
     <footer-component />
@@ -8,9 +9,10 @@
 <script>
 import HeaderComponent from "~/components/header.vue";
 import FooterComponent from "~/components/footer.vue";
+import Success from "~/components/success.vue";
 
 export default {
-  components: { HeaderComponent, FooterComponent }
+  components: { HeaderComponent, FooterComponent, Success }
 };
 </script>
 <style>
@@ -26,8 +28,6 @@ html {
   box-sizing: border-box;
 
   transition: 1s;
-
-  min-width: 768px;
 }
 
 *,
