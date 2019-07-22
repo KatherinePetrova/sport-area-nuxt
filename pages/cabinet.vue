@@ -101,9 +101,13 @@
     </div>
     <div class="add-inf">
       <transition name="slide">
-        <div class="my-booked" :style="{width: showMore ? '100%' : '48%'}" v-if="!showMore2">
+        <div
+          class="my-booked"
+          :style="{width: showMore || offsetWidth <= 767 ? '100%' : '48%'}"
+          v-if="!showMore2"
+        >
           <div class="title">Мои брони</div>
-          <div class="result" :style="{width: showMore ? '48%' : '100%'}">
+          <div class="result" :style="{width: showMore && offsetWidth >= 767 ? '48%' : '100%'}">
             <div
               class="block"
               v-for="(item, index) in myBooks"
@@ -163,7 +167,7 @@
       <transition name="slide">
         <div
           class="my-booked"
-          :style="{width: showMore2 ? '100%' : '48%'}"
+          :style="{width: showMore2 && offsetWidth <= 767 ? '100%' : '48%'}"
           v-if="(user.profile.is_provider || user.profile.is_creator) && !showMore"
         >
           <div class="title">Мои объекты</div>
@@ -183,7 +187,7 @@
               <b-form-textarea id="textarea" rows="3" max-rows="6" disabled></b-form-textarea>
             </div>
           </transition>
-          <div class="result" :style="{width: showMore2 ? '48%' : '100%'}">
+          <div class="result" :style="{width: showMore2 && offsetWidth <= 767 ? '48%' : '100%'}">
             <div
               class="block"
               v-for="(item, index) in myBooks"
@@ -225,6 +229,8 @@ export default {
     await store.dispatch("getMyBooks");
 
     return {
+      offsetWidth: 767,
+
       user,
       loading: false,
       imageData: user.profile.photo.includes("http")
@@ -383,6 +389,11 @@ export default {
         this.loading = false;
       }
     }
+  },
+
+  beforeMount() {
+    this.offsetWidth = document.documentElement.offsetWidth;
+    console.log(this.offsetWidth);
   }
 };
 </script>
@@ -692,8 +703,31 @@ export default {
 }
 
 @media (max-width: 767px) {
+  .image-uploader {
+    width: 100%;
+  }
+
   .cabinet_main {
-    padding: 1em 1em;
+    padding: 1em 0;
+  }
+
+  .cabinet_main > .main {
+    padding: 1em 0.25em;
+
+    flex-direction: column;
+  }
+
+  .cabinet_main > .add-inf {
+    flex-direction: column;
+  }
+
+  .main > .cabinet_block {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .main > .title {
+    left: 1em;
   }
 
   .my-booked > .more {
