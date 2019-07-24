@@ -17,13 +17,13 @@
         <template v-if="user.token">
           <b-button
             variant="outline-light"
-            v-if="user.profile && user.profile.is_provider"
+            v-if="user.profile && user.profile.is_provider && !user.profile.is_creator"
             @click="linkTo = true"
             class="nav-button"
           >Добавить поле</b-button>
           <b-button
             variant="outline-light"
-            v-if="user.profile && user.profile.is_creator"
+            v-if="user.profile && user.profile.is_creator && user.profile.is_provider"
             class="nav-button"
             @click="$router.push('/add')"
           >Добавить поле</b-button>

@@ -1,6 +1,6 @@
 function createTime(from, to) {
   let count = (to - from) * 2 + 1;
-  let iterator = { hour: 9, minute: 0 };
+  let iterator = { hour: from, minute: 0 };
   let subResult = [];
   let result = [];
 
@@ -28,6 +28,23 @@ function createTime(from, to) {
   return result;
 }
 
+function findLimitTimes(array) {
+  let intoInt = JSON.parse(JSON.stringify(array));
+
+  let max = { index: 0, value: 0 };
+  let min = { index: 0, value: 9999999 };
+
+  for (let i = 0; i < intoInt.length; i++) {
+    let sub = intoInt[i].split(":");
+    intoInt[i] = parseInt(`${sub[0]}${sub[1]}`);
+
+    if (max.value < intoInt[i]) max = { index: i, value: intoInt[i] };
+    if (min.value > intoInt[i]) min = { index: i, value: intoInt[i] };
+  }
+
+  return { max: parseInt(array[max.index]), min: parseInt(array[min.index]) };
+}
+
 const days = [
   "Воскресенье",
   "Понедельник",
@@ -38,9 +55,11 @@ const days = [
   "Суббота"
 ];
 
-export default data => {
+export default (data, times) => {
   let result = [];
   let header = [];
+
+  let limits = findLimitTimes(times);
 
   data.forEach(item => {
     let date = new Date(item.date);
@@ -67,7 +86,7 @@ export default data => {
   header.unshift({ title: "Назад", button: true });
   header.push({ title: "Далее", button: true });
 
-  let time = createTime(9, 21);
+  let time = createTime(limits.min, limits.max);
 
   for (let i = 0; i < time.length; i++) {
     let subArray = [];
@@ -78,7 +97,7 @@ export default data => {
         let day = data.find(item => item.date == header[j].date);
         let window = day.windows.find(item => item.from_time == time[i].from);
 
-        if (window) {
+        if (window && window.price != 0) {
           window.title = window.price + " т";
           window.active = false;
           window.date = day.date;

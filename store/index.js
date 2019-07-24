@@ -93,6 +93,8 @@ const createStore = () => {
           let { data } = response;
 
           commit("setPlaycategories", data.results);
+
+          return data.results;
         } catch (error) {
           throw error;
         }
@@ -292,14 +294,13 @@ const createStore = () => {
         try {
           let response = await api().post("playgrounds/", payload, {
             headers: {
-              Authorization: `Token ${state.user.token}`,
-              "Content-Type": "multipart/form-data"
+              Authorization: `Token ${state.user.token}`
             }
           });
 
           console.log(response);
         } catch (error) {
-          console.log(error.response);
+          console.log(error);
         }
       }
     }

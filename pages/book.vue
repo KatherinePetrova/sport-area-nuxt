@@ -16,7 +16,7 @@
             class="main_image"
             :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
           >
-            <span style="position: absolute; bottom: -3.5em;">{{ data.location.address }}</span>
+            <span>{{ data.location.address }}</span>
           </div>
 
           <div class="inputs-block">
@@ -374,6 +374,11 @@ export default {
   color: #707070;
 }
 
+.main_image > span {
+  position: absolute;
+  bottom: -3.5em;
+}
+
 .inf > .inputs-block {
   width: 48%;
   padding-right: 2em;
@@ -422,6 +427,40 @@ span.input-group > a {
 }
 
 @media (max-width: 767px) {
+  .playground_main {
+    padding: 0;
+  }
+
+  .playground_main > .logo {
+    margin: 0;
+    margin-bottom: 0.5em;
+
+    font-size: 3rem;
+  }
+
+  .playground_main > .body {
+    padding: 3em 0;
+  }
+
+  .body > .book_button {
+    width: 100%;
+
+    padding: 0;
+    left: 0;
+  }
+
+  .book_button > a {
+    padding: 0.75em 0;
+    width: calc(100% + 2px);
+
+    text-align: center;
+  }
+
+  .body > .title {
+    font-size: 2em;
+    left: 0.5em;
+  }
+
   .body > .inf {
     flex-direction: column;
   }
@@ -431,8 +470,18 @@ span.input-group > a {
     max-width: 100% !important;
   }
 
-  .body > .book_button {
-    left: calc(50% - (1em + 3.5em + 4em));
+  .inf > .main_image {
+    height: 10em;
+    margin-bottom: 5em;
+  }
+
+  .inf > .main_image {
+    font-size: 1rem;
+    padding: 0 1em;
+  }
+
+  .inf > .inputs-block {
+    padding: 0 1em;
   }
 }
 </style>

@@ -5,189 +5,521 @@
       <div class="form">
         <div class="title">Добавить объект</div>
         <div class="save" @click="save()">СОХРАНИТЬ</div>
-        <b-form-input placeholder="Введите название объекта"></b-form-input>
-        <b-form-select :value="null">
-          <option :value="null">Введите тип площадки</option>
+
+        <b-form-input
+          placeholder="Введите название объекта"
+          v-model="models.name"
+          :state="models.name == error_label ? false : null"
+          @focus="models.name == error_label ? models.name = null : models.name = models.name"
+        ></b-form-input>
+
+        <b-form-select
+          v-model="models.type"
+          :state="models.type == error_label ? false : null"
+          @focus="models.type == error_label ? models.type = null : models.type = models.type"
+        >
+          <option :value="error_label" v-if="models.type == error_label" disabled>{{ error_label }}</option>
+          <option :value="null" disabled>Введите тип площадки</option>
+          <option value="open">Открытая</option>
+          <option value="close">Крытая</option>
         </b-form-select>
-        <b-form-input placeholder="Введите размер объекта"></b-form-input>
-        <b-form-select v-model="location.city">
+
+        <b-input-group class="size">
+          <label>Размер объекта</label>
+          <b-form-input
+            placeholder="Ширина"
+            type="number"
+            v-model="models.width"
+            :state="models.width == error_label ? false : null"
+            @focus="models.width == error_label ? models.width = null : models.width = models.width"
+          ></b-form-input>
+          <b-form-input
+            placeholder="Длина"
+            type="number"
+            v-model="models.length"
+            :state="models.length == error_label ? false : null"
+            @focus="models.length == error_label ? models.length = null : models.length = models.length"
+          ></b-form-input>
+        </b-input-group>
+
+        <b-form-select
+          v-model="models.city"
+          :state="models.city == error_label ? false : null"
+          @focus="models.city == error_label ? models.city = null : models.city = models.city"
+        >
+          <option :value="error_label" v-if="models.city == error_label" disabled>{{ error_label }}</option>
           <option :value="null" disabled>Выберите город</option>
           <option
-            v-for="(item, index) in cities"
+            v-for="(item, index) in data.cities"
             :key="'cityOption' + index"
-            :value="item"
+            :value="item.id"
           >{{ item.name }}</option>
         </b-form-select>
-        <b-form-input placeholder="Введите адрес объекта"></b-form-input>
-        <b-form-input placeholder="Номер телефона"></b-form-input>
-        <b-form-input placeholder="Контактное лицо"></b-form-input>
+
+        <b-form-select
+          v-model="models.category"
+          :state="models.category == error_label ? false : null"
+          @focus="models.category == error_label ? models.category = null : models.category = models.category"
+        >
+          <option
+            :value="error_label"
+            v-if="models.category == error_label"
+            disabled
+          >{{ error_label }}</option>
+          <option :value="null" disabled>Выберите тип спорта</option>
+          <option
+            v-for="(item, index) in data.playcategories"
+            :key="'playOption' + index"
+            :value="item.id"
+          >{{ item.name }}</option>
+        </b-form-select>
+
+        <b-form-input
+          placeholder="Адрес объекта"
+          v-model="models.location.address"
+          :state="models.location.address == error_label ? false : null"
+          disabled
+        ></b-form-input>
+
         <div class="map">
           <label>Укажите расположение на карте</label>
           <div>
+            <template v-if="data.cities.find(item=> item.id == models.city) && !map.picked">
+              <img src="/img/marker.png" alt />
+              <b-button @click="pickLocation">Выбрать</b-button>
+            </template>
+            <label style="font-size: 1.5em; text-align: center" v-else>Сначала нужно выбрать город</label>
+
             <no-ssr>
               <yandex-map
-                :coords="[location.city.latitude, location.city.longitude]"
-                style="width: 100%; height: 100%;"
+                :coords="
+                  map.value ? map.value :
+                  [
+                    data.cities.find(item=> item.id == models.city).latitude,
+                    data.cities.find(item=> item.id == models.city).longitude
+                  ]
+                "
+                style="width: 100%; height: 100%; position: absolute"
                 zoom="13"
-                v-if="location.city"
-              ></yandex-map>
+                v-if="data.cities.find(item=> item.id == models.city)"
+                ref="map"
+              >
+                <div class="map-picker"></div>
+              </yandex-map>
             </no-ssr>
+
+            <transition name="shade">
+              <div class="cover" v-if="map.picked">
+                <label>Расположение указано</label>
+                <b-button @click="map.picked = false">Перевыбрать</b-button>
+              </div>
+            </transition>
           </div>
         </div>
+
         <div class="infrastructure">
           <label>Инфраструктура*</label>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
-          <b-form-checkbox class="point">Трибуны</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.coach">Тренер</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.bathroom">Ванные комнаты</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.dressroom">Раздевалки</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.parking">Парковка</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.lights">Прожектора</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.shower">Душ</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.tribunes">Трибуны</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.sauna">Сауна</b-form-checkbox>
         </div>
-        <b-form-textarea placeholder="Добавить описание владельца"></b-form-textarea>
+
+        <b-form-input
+          placeholder="Тип покрытия"
+          v-model="models.cover_type"
+          :state="models.cover_type == error_label ? false : null"
+          @focus="models.cover_type == error_label ? models.cover_type = null : models.cover_type = models.cover_type"
+        ></b-form-input>
+
+        <b-form-input
+          type="number"
+          placeholder="Процент предоплаты"
+          v-model="models.prepay"
+          :state="models.prepay == error_label ? false : null"
+          @focus="models.prepay == error_label ? models.prepay = null : models.prepay = models.prepay"
+        ></b-form-input>
+
+        <b-form-textarea
+          placeholder="Инвентарь"
+          v-model="models.inventory"
+          :state="models.inventory == error_label ? false : null"
+          @focus="models.inventory == error_label ? models.inventory = null : models.inventory = models.inventory"
+        ></b-form-textarea>
+        <b-form-textarea
+          placeholder="Описание площадки"
+          v-model="models.description"
+          :state="models.description == error_label ? false : null"
+          @focus="models.description == error_label ? models.description = null : models.description = models.description"
+        ></b-form-textarea>
+
         <div class="img">
           <label>Добавить изображения и видео</label>
           <div class="image-uploader">
             <label style="margin-top: -0.3em">+</label>
             <input type="file" />
-            <img src />
+            <!-- <img src /> -->
           </div>
         </div>
-        <b-form-input placeholder="Добавить ссылку на видео"></b-form-input>
+
+        <!-- <b-form-input placeholder="Добавить ссылку на видео"></b-form-input> -->
       </div>
       <div class="form">
         <div class="title" style="font-size: 16px">Укажите время работы и стоимость</div>
-        <b-form-select v-model="every">
-          <option :value="true">Каждый день</option>
-          <option :value="false">Не каждый день</option>
+        <div class="save mobile_save" @click="save()">СОХРАНИТЬ</div>
+
+        <label style="margin: 0; color: #064482">Время работы в будние дни</label>
+        <b-input-group class="size time">
+          <label style="width: 3em; margin: 0 0.5em">От</label>
+          <b-form-select v-model="timeModel.time_from_common_days">
+            <option :value="null" disabled>ЧЧ/ММ</option>
+            <option
+              :value="item"
+              v-for="(item, index) in date.times"
+              :key="'timeOption'+ index"
+            >{{ item }}</option>
+          </b-form-select>
+          <label style="width: 3em; margin: 0 0.5em">до</label>
+          <b-form-select v-model="timeModel.time_to_common_days">
+            <option :value="null" disabled>ЧЧ/ММ</option>
+            <option
+              :value="item"
+              v-for="(item, index) in date.times"
+              :key="'timeOption'+ index * date.times.length"
+            >{{ item }}</option>
+          </b-form-select>
+        </b-input-group>
+
+        <label style="margin: 0; color: #064482">Время работы в выходные дни</label>
+        <b-input-group class="size time">
+          <label style="width: 3em; margin: 0 0.5em">От</label>
+          <b-form-select v-model="timeModel.time_from_holiday_days" :disabled="!date.every">
+            <option :value="null" disabled>ЧЧ/ММ</option>
+            <option
+              :value="item"
+              v-for="(item, index) in date.times"
+              :key="'timeOption'+ index * date.times.length+1"
+            >{{ item }}</option>
+          </b-form-select>
+          <label style="width: 3em; margin: 0 0.5em">до</label>
+          <b-form-select v-model="timeModel.time_to_holiday_days" :disabled="!date.every">
+            <option :value="null" disabled>ЧЧ/ММ</option>
+            <option
+              :value="item"
+              v-for="(item, index) in date.times"
+              :key="'timeOption'+ index * date.times.length+2"
+            >{{ item }}</option>
+          </b-form-select>
+        </b-input-group>
+
+        <b-form-select v-model="date.every">
+          <option :value="true">Указывать каждый день</option>
+          <option :value="false">Указать все дни</option>
         </b-form-select>
-        <div class="days">
+
+        <div class="days" v-if="date.every">
           <div
-            :class="{active: selected == index}"
-            v-for="(item, index) in dates"
+            :class="{active: date.selected == index}"
+            v-for="(item, index) in date.weekDays"
             :key="index + 'day' +index"
-            @click="every ? selected = index : select = 0"
-          >{{ item.day }}</div>
+            @click="date.selected = index"
+          >{{ item }}</div>
         </div>
-        <div class="open">
-          <div @click="dates[selected].open = !dates[selected].open">
+
+        <!-- <div class="open" v-if="date.every">
+          <div @click="date.dates[date.selected].open = !date.dates[date.selected].open">
             <div class="toggle" :class="{'toggle-2': !selectedDates.open}"></div>
           </div>
           <label>{{ selectedDates.open ? 'открыто' : 'закрыто' }}</label>
-        </div>
-        <div class="time">
-          <div class="header">
-            <b-form-select v-model="dates[selected].from">
-              <option
-                v-for="(item, index) in dates[selected].times.slice(0, dates[selected].times.length-1)"
-                :key="'fromOption' + index"
-                :value="item.title"
-              >{{ item.title }}</option>
-            </b-form-select>
-            <label>&ndash;</label>
-            <b-form-select v-model="dates[selected].to">
-              <option
-                v-for="(item, index) in dates[selected].times.slice(1, dates[selected].times.length)"
-                :key="'toOption' + index"
-                :value="item.title"
-              >{{ item.title }}</option>
-            </b-form-select>
-          </div>
-          <div
-            class="header content"
-            v-for="(item, index) in selectedDates.times"
-            :key="'time' + index"
-          >
-            <b-form-input
-              disabled
-              class="nani"
-              :style="{
-                borderBottomStyle: index == selectedDates.times.length-1 ? 'solid !important' : 'none !important', 
-                borderTopStyle: index == 0 ? 'solid !important' : 'none !important'
-              }"
-              :value="item.title"
-            ></b-form-input>
-            <label>&ndash;</label>
-            <b-form-input v-model="dates[selected].times[index].value" place></b-form-input>
-          </div>
-        </div>
+        </div>-->
+
+        <label style="margin: 0; color: #064482">Указать временные промежутки и стоимость</label>
+        <b-input-group
+          class="size"
+          v-for="(itemy, indexy) in date.gaps[date.selected]"
+          :key="'gaps' + indexy"
+        >
+          <label style="width: 3em; margin: 0 0.5em">От</label>
+          <b-form-select v-model="itemy.from">
+            <option :value="null" disabled>ЧЧ/ММ</option>
+            <option
+              :value="item"
+              v-for="(item, index) in times[indexy]"
+              :key="'gapOption'+ index * date.times.length+1"
+            >{{ item }}</option>
+          </b-form-select>
+          <label style="width: 3em; margin: 0 0.5em">до</label>
+          <b-form-select v-model="itemy.to">
+            <option :value="null" disabled>ЧЧ/ММ</option>
+            <option
+              :value="item"
+              v-for="(item, index) in times[indexy]"
+              :key="'gapOption'+ index * date.times.length+2"
+            >{{ item }}</option>
+          </b-form-select>
+          <b-form-input placeholder="Цена" style="margin-left: 1em;" v-model="itemy.price"></b-form-input>
+        </b-input-group>
+        <b-button
+          v-if="addButton"
+          @click="date.gaps[date.selected].push({ from: null, to: null, price: null })"
+        >Добавить промежуток</b-button>
       </div>
     </div>
   </div>
 </template>
 <script>
-import days from "~/service/days.json";
-
 let weekDays = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
-let dates = [];
-weekDays.forEach(item => {
-  dates.push({
-    day: item,
-    times: JSON.parse(JSON.stringify(days)),
-    from: days[0].title,
-    to: days[days.length - 1].title,
-    open: true
-  });
+let times = [];
+
+let hour = 0;
+let minute = 0;
+
+while (hour <= 23) {
+  let hourStr = hour >= 10 ? hour : `0${hour}`;
+  let minuteStr = minute >= 10 ? minute : `0${minute}`;
+
+  times.push(`${hourStr}:${minuteStr}`);
+
+  minute += 30;
+  if (minute > 30) {
+    minute = 0;
+    hour++;
+  }
+}
+
+let gaps = [];
+
+weekDays.forEach((item, index) => {
+  gaps.push([{ from: null, to: null, price: null }]);
 });
 
 export default {
-  async asyncData({ store }) {
-    let cities = await store.dispatch("getCities");
-
-    return {
-      dates,
-      selected: 0,
-      every: true,
-      cities,
-      location: { city: null }
-    };
-  },
   watch: {
-    every(newValue) {
+    "date.every"(newValue) {
       if (!newValue) {
-        this.selected = 0;
+        this.date.selected = 0;
+
+        this.timeModel.time_from_holiday_days = this.timeModel.time_from_common_days;
+        this.timeModel.time_to_holiday_days = this.timeModel.time_to_common_days;
+      }
+    },
+    "timeModel.time_from_common_days"(newValue) {
+      if (!this.date.every) {
+        this.timeModel.time_from_holiday_days = newValue;
+      }
+    },
+    "timeModel.time_to_common_days"(newValue) {
+      if (!this.date.every) {
+        this.timeModel.time_to_holiday_days = newValue;
       }
     }
   },
   computed: {
+    addButton() {
+      let gap = this.date.gaps[this.date.selected];
+      if (gap[gap.length - 1].to == this.times[this.times.length - 1]) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+
     user() {
       return this.$store.state.user;
     },
-    selectedDates() {
-      let result = JSON.parse(JSON.stringify(this.dates[this.selected]));
 
-      let fromIndex = result.times.findIndex(item => {
-        return item.title == result.from;
-      });
-      let toIndex = result.times.findIndex(item => {
-        return item.title == result.to;
-      });
+    times() {
+      let gap = this.date.gaps[this.date.selected];
 
-      if (fromIndex >= toIndex) {
-        try {
-          this.dates[this.selected].from = this.dates[this.selected].times[
-            toIndex - 2
-          ].title;
+      let result = [];
 
-          fromIndex = toIndex - 2;
-        } catch (error) {
-          this.dates[this.selected].to = this.dates[this.selected].times[
-            fromIndex + 2
-          ].title;
+      gap.forEach((item, index) => {
+        let time = { from: null, to: null };
+        let dayType = this.date.selected < 5 ? "common" : "holiday";
 
-          toIndex = fromIndex + 2;
+        for (let key in time) {
+          time[key] = this.timeModel[`time_${key}_${dayType}_days`];
         }
-      }
 
-      result.times = result.times.slice(fromIndex, toIndex + 1);
+        if (index > 0) {
+          time.from = this.date.gaps[this.date.selected][index - 1].to;
+        }
+
+        let indexes = { from: null, to: null };
+        for (let key in indexes) {
+          indexes[key] = this.date.times.findIndex(item => time[key] == item);
+        }
+
+        result.push(this.date.times.slice(indexes.from, indexes.to + 1));
+      });
 
       return result;
     }
   },
   methods: {
-    save() {
-      this.$store.dispatch("addPlayground", { location: this.location });
+    async save() {
+      try {
+        // validation
+        let error = [];
+        for (let key in this.models) {
+          if (
+            this.models[key] == null ||
+            this.models[key] == false ||
+            this.models[key] == this.error_label
+          ) {
+            error.push(key);
+          }
+        }
+
+        if (error.length > 0) {
+          throw error;
+        }
+
+        let is = this.models.is;
+        delete this.models.is;
+
+        for (let key in is) {
+          this.models["is_" + key] = is[key];
+        }
+
+        for (let key in this.timeModel) {
+          this.models[key] = this.timeModel[key];
+          this.models["work_" + key] = this.timeModel[key];
+        }
+
+        // booking table constructing
+        let gaps = JSON.parse(JSON.stringify(this.date.gaps));
+        let times = this.date.times;
+
+        if (!this.date.every) {
+          for (let i = 1; i < gaps.length; i++) {
+            gaps[i] = JSON.parse(JSON.stringify(gaps[0]));
+          }
+        }
+
+        for (let i = 0; i < gaps.length; i++) {
+          for (let j = 0; j < gaps[i].length - 1; j++) {
+            if (gaps[i][j].to != gaps[i][j + 1].from) {
+              gaps[i].splice(j + 1, 0, {
+                from: gaps[i][j].to,
+                to: gaps[i][j + 1].from,
+                price: 0
+              });
+            }
+          }
+        }
+
+        let cost = 999999;
+        for (let i = 0; i < gaps.length; i++) {
+          for (let j = 0; j < gaps[i].length; j++) {
+            this.models.schedule.push({
+              day: i + 1,
+              from_time: gaps[i][j].from,
+              to_time: gaps[i][j].to,
+              price: parseInt(gaps[i][j].price)
+            });
+
+            if (gaps[i][j].price && cost > gaps[i][j].price) {
+              cost = gaps[i][j].price;
+            }
+          }
+        }
+
+        this.models.cost = cost;
+      } catch (error) {
+        if (error.length) {
+          error.forEach(item => {
+            this.models[item] = this.error_label;
+          });
+
+          window.scrollTo({ top: 200, behavior: "smooth" });
+        } else {
+          alert();
+        }
+      }
+
+      console.log(this.models);
+      // await this.$store.dispatch("addPlayground", this.models);
+    },
+
+    pickLocation() {
+      let center = this.$refs.map.myMap._yandexState._model.center;
+      this.map.value = center;
+
+      this.models.location.latitude = this.map.value[0].toFixed(10);
+      this.models.location.longitude = this.map.value[1].toFixed(10);
+
+      this.map.picked = true;
     }
+  },
+  async asyncData({ store }) {
+    let cities = await store.dispatch("getCities");
+    let playcategories = await store.dispatch("getPlaycategories");
+
+    return {
+      error_label: "Заполните это поле",
+
+      timeModel: {
+        time_from_common_days: null,
+        time_to_common_days: null,
+        time_from_holiday_days: null,
+        time_to_holiday_days: null
+      },
+
+      data: { cities, playcategories },
+      map: { value: null, picked: false },
+      date: { weekDays, times, every: true, selected: 0, gaps },
+      models: {
+        name: null,
+        category: null,
+        city: null,
+
+        location: {
+          latitude: null,
+          longitude: null,
+
+          address: null
+        },
+
+        time_from_common_days: null,
+        time_to_common_days: null,
+        time_from_holiday_days: null,
+        time_to_holiday_days: null,
+
+        work_time_from_common_days: null,
+        work_time_to_common_days: null,
+        work_time_from_holiday_days: null,
+        work_time_to_holiday_days: null,
+
+        prepay: null,
+        type: null,
+        cover_type: null,
+
+        width: null,
+        length: null,
+
+        description: null,
+        inventory: null,
+
+        is: {
+          coach: false,
+          bathroom: false,
+          dressroom: false,
+          parking: false,
+          lights: false,
+          shower: false,
+          tribunes: false,
+          sauna: false
+        },
+
+        schedule: [],
+        cost: null
+      }
+    };
   }
 };
 </script>
@@ -250,8 +582,27 @@ export default {
   font-size: 1rem;
 }
 
+.form > .size {
+  display: flex !important;
+  flex-wrap: initial !important;
+}
+
+.size > * {
+  width: 100%;
+}
+
+.size > label {
+  margin: 0;
+  margin-right: 1em;
+
+  display: flex;
+  align-items: center;
+
+  color: #064482;
+}
+
 .form > .time {
-  width: 60%;
+  width: 70%;
 }
 
 .time > div {
@@ -333,12 +684,11 @@ div > .toggle {
 
   right: 1px;
 
-  transition: 0.5s;
+  transition: 0.1s;
 }
 
 div > .toggle-2 {
-  right: auto;
-  left: 1px;
+  right: calc(3em - 1.35em - 1px);
 }
 
 .open > label {
@@ -431,6 +781,10 @@ div > .toggle-2 {
   background-color: #335d88;
 }
 
+.form > .mobile_save {
+  display: none;
+}
+
 .map > label {
   color: #064482;
   font-size: 0.9em;
@@ -444,7 +798,46 @@ div > .toggle-2 {
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
   border: solid 1px #064482;
 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  color: #064482;
+
   overflow: hidden;
+  position: relative;
+}
+
+.map > div > button {
+  position: absolute;
+
+  bottom: 1em;
+  z-index: 3;
+}
+
+.map > div > img {
+  height: 3em;
+
+  position: absolute;
+  z-index: 3;
+}
+
+.map > div > .cover {
+  height: 100%;
+  width: 100%;
+
+  background-color: rgba(0, 0, 0, 0.16);
+  color: white;
+
+  position: absolute;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  flex-direction: column;
+  font-weight: bold;
 }
 
 .form > .infrastructure {
@@ -534,6 +927,14 @@ div > .toggle-2 {
 
   .form > .time {
     width: 100%;
+  }
+
+  .form > .save {
+    display: none;
+  }
+
+  .form > .mobile_save {
+    display: block;
   }
 
   .days > div {

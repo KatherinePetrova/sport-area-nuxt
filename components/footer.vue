@@ -1,7 +1,7 @@
 <template>
   <footer class="fdb-block footer-large blue">
     <div class="container">
-      <div class="row align-items-top text-center pt-5">
+      <div class="row align-items-top text-center pt-5" style="margin: 0 !important">
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 text-sm-left">
           <h6>Для партнеров</h6>
           <nav class="nav flex-column">
@@ -27,18 +27,18 @@
           <h6>Мы в социальных сетях</h6>
           <p class="lead">
             <a href class="mx-2">
-              <i class="fab fa-twitter" aria-hidden="true"/>
+              <i class="fab fa-twitter" aria-hidden="true" />
             </a>
             <a href class="mx-2">
-              <i class="fab fa-facebook" aria-hidden="true"/>
+              <i class="fab fa-facebook" aria-hidden="true" />
             </a>
             <a href class="mx-2">
-              <i class="fab fa-instagram" aria-hidden="true"/>
+              <i class="fab fa-instagram" aria-hidden="true" />
             </a>
           </p>
         </div>
       </div>
-      <div class="row mt-3 pb-5">
+      <div class="row mt-3 pb-5" style="margin: 0 !important">
         <div class="col text-center">2019 все права защищены ИП "MultiDigital"</div>
       </div>
     </div>

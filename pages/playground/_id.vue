@@ -16,42 +16,42 @@
             class="main_image"
             :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
           ></div>
-          <div style="width: 40%">
-            <div style="display: flex; margin-bottom: 1em">
+          <div class="information">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
               <span class="cost">{{ `от ${data.cost} т` }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
               <span
                 style="width: 60%; min-width: 00%; color: #707070;"
               >{{ `${data.location.address}` }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
               <span
                 style="width: 60%; min-width: 60%; color: #707070;"
-              >{{ `${data.time_from_common_days} - ${data.time_to_common_days}` }}</span>
+              >{{ `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
               <span
                 style="width: 60%; min-width: 60%; color: #707070;"
               >{{ `${Math.round(data.width)}х${Math.round(data.length)} м` }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Тип покрытия</span>
               <span style="width: 60%; min-width: 60%; color: #707070;">{{ `${data.cover_type}` }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Инфраструктура</span>
               <span style="width: 60%; min-width: 60%; color: #707070;">{{ structure() }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Описание</span>
               <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
             </div>
-            <div style="display: flex; margin-bottom: 1em">
+            <div>
               <span
                 style="width: 100%; min-width: 100%; color: #707070;"
               >{{ `Контакты: ${data.phone}` }}</span>
@@ -145,7 +145,24 @@ export default {
         item => item.id == data.category
       );
 
-      let table = createTable(data.days);
+      let common = {
+        from: data.time_from_common_days,
+        to: data.time_to_common_days
+      };
+
+      let holiday = {
+        from: data.time_from_holiday_days,
+        to: data.time_to_holiday_days
+      };
+
+      let times = [
+        data.time_from_common_days,
+        data.time_to_common_days,
+        data.time_from_holiday_days,
+        data.time_to_holiday_days
+      ];
+
+      let table = createTable(data.days, times);
 
       return {
         data,
@@ -481,6 +498,21 @@ export default {
   border: solid 1px #064482;
 }
 
+.inf > .information {
+  width: 40%;
+}
+
+.information > div {
+  display: flex;
+  margin-bottom: 1em;
+}
+
+.information > div > span {
+  display: flex;
+
+  align-items: center;
+}
+
 .inf > .map {
   width: 40%;
   height: 22em;
@@ -597,8 +629,43 @@ td.booked {
     padding: 2em 0;
   }
 
+  .body > .book_button {
+    left: 0;
+    padding: 0;
+
+    width: 100%;
+  }
+
+  .book_button > button {
+    padding: 0.75em 0;
+    width: 100%;
+  }
+
   .body > .title {
-    left: 1em;
+    left: 0.5em;
+    font-size: 2em;
+  }
+
+  .body > .booking {
+    padding: 0;
+    overflow: auto;
+  }
+
+  .booking > .title {
+    left: 0;
+
+    padding: 1em;
+    width: 100%;
+    position: sticky;
+  }
+
+  table {
+    table-layout: auto;
+  }
+
+  td {
+    width: 10em;
+    min-width: 10em;
   }
 
   .body > .inf {
@@ -608,6 +675,27 @@ td.booked {
   .inf > div {
     width: 100% !important;
     max-width: 100% !important;
+  }
+
+  .inf > .main_image {
+    height: 15em;
+    margin-bottom: 1em;
+  }
+
+  .inf > .information {
+    padding: 0.5em;
+  }
+
+  .inf > .images {
+    padding: 0 0.5em;
+  }
+
+  .images > .img {
+    margin: 0 !important;
+    margin-bottom: 1em !important;
+
+    width: 100%;
+    height: 10em;
   }
 }
 </style>

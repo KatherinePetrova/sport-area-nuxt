@@ -16,6 +16,15 @@
   transition: transform 0.5s;
 }
 
+.shade-enter-active,
+.shade-leave-active {
+  transition: opacity 0.5s;
+}
+.shade-enter,
+.shade-leave-to {
+  opacity: 0;
+}
+
 ::placeholder {
   color: #064482 !important;
   opacity: 0.5 !important;
@@ -32,6 +41,12 @@ form {
   padding: 2em 8em;
 
   color: #064482;
+}
+
+@media (max-width: 767px) {
+  form {
+    padding: 2em;
+  }
 }
 
 form > label {

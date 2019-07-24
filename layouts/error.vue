@@ -26,4 +26,10 @@ export default {
 
   padding: 10em;
 }
+
+@media (max-width: 767px) {
+  .error-main {
+    padding: 1em;
+  }
+}
 </style>

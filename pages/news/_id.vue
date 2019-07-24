@@ -107,4 +107,26 @@ export default {
 
   margin-top: 1em;
 }
+
+@media (max-width: 767px) {
+  .news_main {
+    padding: 1em 0;
+  }
+
+  .news_main > .main {
+    padding: 1em 0;
+  }
+
+  .main > h1 {
+    padding: 0 0.25em;
+  }
+
+  .main > .carousel {
+    height: 13em;
+  }
+
+  .main > .text {
+    padding: 0 0.5em;
+  }
+}
 </style>
