@@ -103,9 +103,7 @@
                 zoom="13"
                 v-if="data.cities.find(item=> item.id == models.city)"
                 ref="map"
-              >
-                <div class="map-picker"></div>
-              </yandex-map>
+              ></yandex-map>
             </no-ssr>
 
             <transition name="shade">
@@ -161,9 +159,27 @@
           <label>Добавить изображения и видео</label>
           <div class="image-uploader">
             <label style="margin-top: -0.3em">+</label>
-            <input type="file" />
-            <!-- <img src /> -->
+            <input type="file" @change="addImage" />
           </div>
+
+          <template v-if="imagesModel.length > 0">
+            <label style="font-size: 1rem; color: #064482; margin-top: 1em">Предпросмотр</label>
+            <b-carousel
+              controls
+              background="#f1f9ff"
+              indicators
+              style="height: 15rem; display: flex; justify-content: center; align-items: center; overflow: hidden"
+              class="carousel"
+              img-width="100%"
+              v-if="imagePicked"
+            >
+              <b-carousel-slide
+                :img-src="item.src"
+                v-for="(item, index) in imagesModel"
+                :key="'imageModelImage' + index"
+              ></b-carousel-slide>
+            </b-carousel>
+          </template>
         </div>
 
         <!-- <b-form-input placeholder="Добавить ссылку на видео"></b-form-input> -->
@@ -175,7 +191,11 @@
         <label style="margin: 0; color: #064482">Время работы в будние дни</label>
         <b-input-group class="size time">
           <label style="width: 3em; margin: 0 0.5em">От</label>
-          <b-form-select v-model="timeModel.time_from_common_days">
+          <b-form-select
+            v-model="timeModel.time_from_common_days"
+            :state="models.time_from_common_days == error_label ? false : null"
+            @change="models.time_from_common_days = null"
+          >
             <option :value="null" disabled>ЧЧ/ММ</option>
             <option
               :value="item"
@@ -184,7 +204,11 @@
             >{{ item }}</option>
           </b-form-select>
           <label style="width: 3em; margin: 0 0.5em">до</label>
-          <b-form-select v-model="timeModel.time_to_common_days">
+          <b-form-select
+            v-model="timeModel.time_to_common_days"
+            :state="models.time_to_common_days == error_label ? false : null"
+            @change="models.time_to_common_days = null"
+          >
             <option :value="null" disabled>ЧЧ/ММ</option>
             <option
               :value="item"
@@ -197,7 +221,12 @@
         <label style="margin: 0; color: #064482">Время работы в выходные дни</label>
         <b-input-group class="size time">
           <label style="width: 3em; margin: 0 0.5em">От</label>
-          <b-form-select v-model="timeModel.time_from_holiday_days" :disabled="!date.every">
+          <b-form-select
+            v-model="timeModel.time_from_holiday_days"
+            :disabled="!date.every"
+            :state="models.time_from_holiday_days == error_label ? false : null"
+            @change="models.time_from_holiday_days = null"
+          >
             <option :value="null" disabled>ЧЧ/ММ</option>
             <option
               :value="item"
@@ -206,7 +235,12 @@
             >{{ item }}</option>
           </b-form-select>
           <label style="width: 3em; margin: 0 0.5em">до</label>
-          <b-form-select v-model="timeModel.time_to_holiday_days" :disabled="!date.every">
+          <b-form-select
+            v-model="timeModel.time_to_holiday_days"
+            :disabled="!date.every"
+            :state="models.time_to_holiday_days == error_label ? false : null"
+            @change="models.time_to_holiday_days = null"
+          >
             <option :value="null" disabled>ЧЧ/ММ</option>
             <option
               :value="item"
@@ -239,29 +273,35 @@
 
         <label style="margin: 0; color: #064482">Указать временные промежутки и стоимость</label>
         <b-input-group
-          class="size"
+          class="size breaks"
           v-for="(itemy, indexy) in date.gaps[date.selected]"
           :key="'gaps' + indexy"
         >
-          <label style="width: 3em; margin: 0 0.5em">От</label>
-          <b-form-select v-model="itemy.from">
-            <option :value="null" disabled>ЧЧ/ММ</option>
-            <option
-              :value="item"
-              v-for="(item, index) in times[indexy]"
-              :key="'gapOption'+ index * date.times.length+1"
-            >{{ item }}</option>
-          </b-form-select>
-          <label style="width: 3em; margin: 0 0.5em">до</label>
-          <b-form-select v-model="itemy.to">
-            <option :value="null" disabled>ЧЧ/ММ</option>
-            <option
-              :value="item"
-              v-for="(item, index) in times[indexy]"
-              :key="'gapOption'+ index * date.times.length+2"
-            >{{ item }}</option>
-          </b-form-select>
-          <b-form-input placeholder="Цена" style="margin-left: 1em;" v-model="itemy.price"></b-form-input>
+          <div>
+            <label style="width: 3em; margin: 0 0.5em">От</label>
+            <b-form-select v-model="itemy.from" :state="itemy.from">
+              <option :value="null" disabled>ЧЧ/ММ</option>
+              <option
+                :value="item"
+                v-for="(item, index) in times[indexy]"
+                :key="'gapOption'+ index * date.times.length+1"
+              >{{ item }}</option>
+            </b-form-select>
+          </div>
+
+          <div>
+            <label style="width: 3em; margin: 0 0.5em">до</label>
+            <b-form-select v-model="itemy.to" :state="itemy.to">
+              <option :value="null" disabled>ЧЧ/ММ</option>
+              <option
+                :value="item"
+                v-for="(item, index) in times[indexy]"
+                :key="'gapOption'+ index * date.times.length+2"
+              >{{ item }}</option>
+            </b-form-select>
+          </div>
+
+          <b-form-input placeholder="Цена" type="number" v-model="itemy.price" :state="itemy.price"></b-form-input>
         </b-input-group>
         <b-button
           v-if="addButton"
@@ -316,12 +356,25 @@ export default {
       if (!this.date.every) {
         this.timeModel.time_to_holiday_days = newValue;
       }
+    },
+    "date.gaps": {
+      deep: true,
+      handler(newValue) {
+        let gap = JSON.parse(JSON.stringify(newValue[this.date.selected]));
+        let times = JSON.parse(JSON.stringify(this.times[gap.length - 1]));
+
+        if (times.length < 2) {
+          this.date.gaps[this.date.selected].splice(gap.length - 1, 1);
+        }
+      }
     }
   },
   computed: {
     addButton() {
       let gap = this.date.gaps[this.date.selected];
-      if (gap[gap.length - 1].to == this.times[this.times.length - 1]) {
+      let times = this.times[gap.length - 1];
+
+      if (gap[gap.length - 1].to == times[times.length - 1]) {
         return false;
       } else {
         return true;
@@ -361,38 +414,82 @@ export default {
     }
   },
   methods: {
+    addImage(event) {
+      try {
+        this.imagePicked = false;
+
+        let reader = new FileReader();
+        let input = event.target;
+
+        let imageObject = {};
+
+        reader.onload = e => {
+          imageObject.src = e.target.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+        imageObject.file = input.files[0];
+
+        this.imagesModel.push(imageObject);
+
+        setTimeout(() => {
+          this.imagePicked = true;
+        }, 100);
+      } catch (e) {}
+    },
+
     async save() {
       try {
+        for (let key in this.timeModel) {
+          this.models[key] = this.timeModel[key];
+          this.models["work_" + key] = this.timeModel[key];
+        }
+
         // validation
         let error = [];
         for (let key in this.models) {
           if (
-            this.models[key] == null ||
-            this.models[key] == false ||
-            this.models[key] == this.error_label
+            (this.models[key] == null ||
+              this.models[key] == false ||
+              this.models[key] == this.error_label) &&
+            (!key.includes("schedule") && !key.includes("cost"))
           ) {
             error.push(key);
           }
         }
 
         if (error.length > 0) {
-          throw error;
+          throw { type: "models", error };
+        }
+
+        let gaps_error = [];
+        let gaps = JSON.parse(JSON.stringify(this.date.gaps));
+        let limit = this.date.every ? gaps.length : 1;
+        for (let i = 0; i < limit; i++) {
+          for (let j = 0; j < gaps[i].length; j++) {
+            let fields = [];
+            for (let key in gaps[i][j]) {
+              if (gaps[i][j][key] == null || gaps[i][j][key] == false) {
+                fields.push(key);
+              }
+            }
+            if (fields.length > 0) {
+              gaps_error.push({ coords: { i, j }, fields });
+            }
+          }
+        }
+
+        if (gaps_error.length > 0) {
+          throw { type: "gaps", error: gaps_error };
         }
 
         let is = this.models.is;
-        delete this.models.is;
 
         for (let key in is) {
           this.models["is_" + key] = is[key];
         }
 
-        for (let key in this.timeModel) {
-          this.models[key] = this.timeModel[key];
-          this.models["work_" + key] = this.timeModel[key];
-        }
-
         // booking table constructing
-        let gaps = JSON.parse(JSON.stringify(this.date.gaps));
         let times = this.date.times;
 
         if (!this.date.every) {
@@ -430,26 +527,65 @@ export default {
         }
 
         this.models.cost = cost;
-      } catch (error) {
-        if (error.length) {
+
+        let payload = {};
+        for (let key in this.models) {
+          if (key != "is") {
+            payload[key] = this.models[key];
+          }
+        }
+
+        await this.$store.dispatch("addPlayground", {
+          payload,
+          form: this.imagesModel
+        });
+
+        this.$store.commit("setSuccess", {
+          show: true,
+          message:
+            "Объект успешно добавлен! Вы можете посмотреть статус объекта в личном кабинете."
+        });
+
+        this.$router.push("/cabinet");
+      } catch (e) {
+        if (e.type == "models") {
+          let { error } = e;
           error.forEach(item => {
             this.models[item] = this.error_label;
           });
 
           window.scrollTo({ top: 200, behavior: "smooth" });
+        } else if (e.type == "gaps") {
+          let { error } = e;
+
+          error.forEach(item => {
+            let { coords } = item;
+
+            item.fields.forEach(key => {
+              this.date.gaps[coords.i][coords.j][key] = false;
+            });
+          });
+
+          window.scrollTo({ top: 200, behavior: "smooth" });
         } else {
-          alert();
+          alert("Ошибка, попробуйте перезагрузить страницу");
+          console.log(e);
         }
       }
-
-      console.log(this.models);
-      // await this.$store.dispatch("addPlayground", this.models);
     },
 
-    pickLocation() {
-      let center = this.$refs.map.myMap._yandexState._model.center;
+    async pickLocation() {
+      let map = this.$refs.map;
+      let center = map.myMap._yandexState._model.center;
+
       this.map.value = center;
 
+      let geoCoder = await ymaps.geocode(center);
+      let address = geoCoder.geoObjects
+        .get(0)
+        .properties.get("metaDataProperty").GeocoderMetaData.text;
+
+      this.models.location.address = address;
       this.models.location.latitude = this.map.value[0].toFixed(10);
       this.models.location.longitude = this.map.value[1].toFixed(10);
 
@@ -462,6 +598,9 @@ export default {
 
     return {
       error_label: "Заполните это поле",
+
+      imagePicked: false,
+      imagesModel: [],
 
       timeModel: {
         time_from_common_days: null,
@@ -599,6 +738,25 @@ export default {
   align-items: center;
 
   color: #064482;
+}
+
+.form > .breaks > div {
+  display: flex;
+  align-items: center;
+
+  margin-bottom: 0.5em;
+}
+
+.breaks > input {
+  margin-left: 1em;
+}
+
+.breaks > div > label {
+  display: flex;
+  justify-content: center;
+
+  width: 3em;
+  margin: 0 0.5em;
 }
 
 .form > .time {
@@ -865,11 +1023,24 @@ div > .toggle-2 {
   opacity: 0.5;
 }
 
+.img > .carousel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+
+  height: 15rem;
+  width: 100%;
+
+  border: solid 1px #064482;
+}
+
 .img > .image-uploader {
-  font-size: 15vw;
+  font-size: 12rem;
 
   height: 1em;
-  width: 70%;
+  width: 100%;
 
   border: solid 1px #064482;
   color: #064482;
@@ -885,12 +1056,6 @@ div > .toggle-2 {
   text-align: center;
 
   overflow: hidden;
-}
-
-.image-uploader > img {
-  width: 100%;
-
-  position: absolute;
 }
 
 .image-uploader > input {
@@ -919,6 +1084,14 @@ div > .toggle-2 {
 
   .body > .form {
     width: 100%;
+  }
+
+  .form > .breaks {
+    flex-direction: column;
+  }
+
+  .breaks > input {
+    margin: 0;
   }
 
   .form > .title {

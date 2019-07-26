@@ -279,8 +279,7 @@ const createStore = () => {
         try {
           let response = await api().post(`auth/change_password/`, payload, {
             headers: {
-              Authorization: `Token ${state.user.token}`,
-              "Content-Type": "multipart/form-data"
+              Authorization: `Token ${state.user.token}`
             }
           });
 
@@ -290,7 +289,7 @@ const createStore = () => {
         }
       },
 
-      async addPlayground({ state }, payload) {
+      async addPlayground({ state }, { payload, form }) {
         try {
           let response = await api().post("playgrounds/", payload, {
             headers: {
@@ -298,9 +297,33 @@ const createStore = () => {
             }
           });
 
-          console.log(response);
+          let { data } = response;
+          let { id } = data;
+
+          form.forEach(async item => {
+            let image = new FormData();
+            let file = item.file;
+
+            Object.defineProperty(file, "name", {
+              writable: true,
+              value: id + "_" + file.name
+            });
+
+            image.append("image0", file);
+
+            let imageResponse = await api().post(
+              `playgrounds/${id}/add_photo/`,
+              image,
+              {
+                headers: {
+                  Authorization: `Token ${state.user.token}`,
+                  "Content-Type": "multipart/form-data"
+                }
+              }
+            );
+          });
         } catch (error) {
-          console.log(error);
+          throw error;
         }
       }
     }

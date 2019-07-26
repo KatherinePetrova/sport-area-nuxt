@@ -144,7 +144,7 @@ export default {
       let category = store.state.playcategories.find(
         item => item.id == data.category
       );
-
+      
       let common = {
         from: data.time_from_common_days,
         to: data.time_to_common_days
