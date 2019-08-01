@@ -46,8 +46,8 @@
           <div style="overflow: hidden; height: 100%; width: 100%; position: relative">
             <vue-slick
               :options="{
-                slidesToShow: 4, 
-                slidesToScroll: 4, 
+                slidesToShow: slides, 
+                slidesToScroll: slides, 
                 dots: true,
                 infinite: false,
                 speed: 300,
@@ -64,7 +64,7 @@
                 @click="$router.push(`/news/${item.id}`)"
               >
                 <div
-                  class="news fdb-box pt-5 p-4"
+                  class="news fdb-box"
                   style="overflow: hidden; background-size: cover; background-position: center"
                   :style="{backgroundImage: item.images.length > 0 ? `url(${item.images[0].image})` : 'url(/img/news.png)'}"
                 >
@@ -118,7 +118,7 @@ import api from "~/service/api.js";
 
 export default {
   components: { ModalComponent, ModalComponentTwo },
-  async asyncData({ store, query }) {
+  async asyncData({ store }) {
     await store.dispatch("getPlaycategories");
     await store.dispatch("getNews");
 
@@ -133,19 +133,25 @@ export default {
       sports[i].playgrounds = data.results.slice(0, 4);
     }
 
-    let successMessage = null;
-
-    if (query.payment_success) {
-      let success = JSON.parse(query.payment_success);
-
-      successMessage = `Предоплата брони ${success.name}, ${success.date} ${success.time} на сумму ${success.sum} тг прошла успешно.\n\nЗайдите в личный кабинет, чтобы узнать подоброную информацию`;
-    }
-
-    return { sports, successMessage };
+    return { sports };
   },
   computed: {
     news() {
       return this.$store.state.news;
+    },
+
+    slides() {
+      try {
+        let offsetWidth = document.documentElement.offsetWidth;
+
+        if (offsetWidth >= 768) {
+          return 4;
+        } else {
+          return 1;
+        }
+      } catch (error) {
+        return 2;
+      }
     }
   },
   data() {
@@ -165,14 +171,6 @@ export default {
           this.sports[i].show = false;
         }
       }
-    }
-  },
-  mounted() {
-    if (this.successMessage) {
-      this.$store.commit("setSuccess", {
-        show: true,
-        message: this.successMessage
-      });
     }
   }
 };

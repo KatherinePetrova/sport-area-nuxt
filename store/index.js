@@ -1,6 +1,7 @@
 import Vuex from "vuex";
 import api from "~/service/api.js";
 import { verify } from "crypto";
+import { nextTick } from "q";
 
 const createStore = () => {
   return new Vuex.Store({
@@ -87,6 +88,30 @@ const createStore = () => {
     },
 
     actions: {
+      async nuxtServerInit({ state, commit, dispatch }, { req }) {
+        if (req && req.headers && req.headers.cookie) {
+          let cookieArray = req.headers.cookie;
+          cookieArray = cookieArray.split("; ");
+          let cookie = {};
+
+          cookieArray.forEach(item => {
+            cookie[item.split("=")[0]] = item.split("=")[1];
+          });
+
+          if (cookie.user_id) {
+            try {
+              await dispatch("getUser", cookie.user_id);
+              let user = state.user;
+              user.token = cookie.token;
+
+              commit("setUser", user);
+            } catch (error) {
+              console.log(error.response);
+            }
+          }
+        }
+      },
+
       async getPlaycategories({ state, commit }) {
         try {
           let response = await api().get("playcategories");
@@ -143,6 +168,23 @@ const createStore = () => {
           let { data } = response;
 
           commit("setPlayground", data);
+
+          return data;
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async putPlayground({ state, commit }, payload) {
+        try {
+          let { id, data } = payload;
+          let response = await api().put(`playgrounds/${id}/`, data, {
+            headers: {
+              Authorization: `Token ${state.user.token}`
+            }
+          });
+
+          return response.data;
         } catch (error) {
           throw error;
         }
@@ -190,10 +232,9 @@ const createStore = () => {
       async getUser({ state, commit }, id) {
         try {
           let response = await api().get(`auth/users/${id}/`, {
-            headers: {
-              Authorization: `Token ${state.user.token}`,
-              "Content-Type": "multipart/form-data"
-            }
+            // headers: {
+            //   Authorization: `Token ${state.user.token}`
+            // }
           });
           let { data } = response;
 
@@ -258,6 +299,21 @@ const createStore = () => {
 
           let { data } = response;
           commit("setMyBooks", data.results);
+        } catch (error) {
+          throw error;
+        }
+      },
+
+      async getMyObjects({ state, commit }) {
+        try {
+          let response = await api().get("playgrounds/my/", {
+            headers: {
+              Authorization: `Token ${state.user.token}`
+            }
+          });
+
+          let { data } = response;
+          return data.results;
         } catch (error) {
           throw error;
         }

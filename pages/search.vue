@@ -618,7 +618,7 @@ export default {
   }
 
   .filter > button {
-    left: auto;
+    left: 15%;
   }
 
   .block > select {

@@ -8,7 +8,18 @@
     <transition name="page">
       <div class="body">
         <div class="title">{{ data.name }}</div>
-        <div class="book_button">
+        <div class="book_button" v-if="user && user.id == data.owner">
+          <button @click="ownerBook = true" :disabled="booked.length == 0">РУЧНАЯ БРОНЬ</button>
+          <b-modal v-model="ownerBook" hide-footer hide-header>
+            <b-form @submit.prevent="proceedAsOwner">
+              <label style="margin-botom: 1em">Клиент</label>
+              <b-form-input placeholder="Имя клиента" v-model="user_info.name"></b-form-input>
+              <b-form-input placeholder="Телефон клиента" v-model="user_info.phone"></b-form-input>
+              <b-button type="submit" style="margin-top: 1em">Подтвердить</b-button>
+            </b-form>
+          </b-modal>
+        </div>
+        <div class="book_button" v-else>
           <button @click="proceed()" :disabled="booked.length == 0">ЗАБРОНИРОВАТЬ</button>
         </div>
         <div class="inf">
@@ -19,7 +30,7 @@
           <div class="information">
             <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
-              <span class="cost">{{ `от ${data.cost} т` }}</span>
+              <span class="cost">{{ `от ${data.cost*2} т` }}</span>
             </div>
             <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
@@ -127,6 +138,27 @@
             style="transition: 0.5"
           >{{ `Предоплата ${data.prepay}%: ${price.pre} т` }}</span>
         </transition-group>
+
+        <template v-if="user && user.id == data.owner">
+          <b-button
+            v-b-toggle.collapse-2
+            style="margin-left: 2em; margin-bottom: 1em"
+          >Информация о бронировании</b-button>
+          <b-collapse id="collapse-2">
+            <label
+              v-if="table.length == 0"
+              style="color: #064482"
+            >Вашу площадку еще никто не бронировал : ^)</label>
+            <div
+              class="booked-table"
+              v-for="(item, index) in bookedTable"
+              :key="'tableslot' + index"
+            >
+              <div>{{ item.date }}</div>
+              <b-table hover :items="item.dates"></b-table>
+            </div>
+          </b-collapse>
+        </template>
       </div>
     </transition>
   </div>
@@ -144,7 +176,9 @@ export default {
       let category = store.state.playcategories.find(
         item => item.id == data.category
       );
-      
+
+      let days = data.days;
+
       let common = {
         from: data.time_from_common_days,
         to: data.time_to_common_days
@@ -162,7 +196,32 @@ export default {
         data.time_to_holiday_days
       ];
 
+      console.log(data.days);
+
       let table = createTable(data.days, times);
+
+      let bookedTable = [];
+
+      for (let i = 0; i < days.length; i++) {
+        let dates = [];
+        for (let j = 0; j < days[i].windows.length; j++) {
+          if (days[i].windows[j].is_booked) {
+            let window = {
+              Имя: days[i].windows[j].booked_user_info.name,
+              Телефон: days[i].windows[j].booked_user_info.phone,
+              Время: `${days[i].windows[j].from_time}-${days[i].windows[j].to_time}`,
+              Статус: days[i].windows[j].is_paid
+                ? "Оплачено"
+                : "Ожидается оплата"
+            };
+            dates.push(window);
+          }
+        }
+
+        if (dates.length > 0) {
+          bookedTable.push({ date: days[i].date, dates });
+        }
+      }
 
       return {
         data,
@@ -170,7 +229,13 @@ export default {
         main_image: 0,
         table,
         booked: [],
-        page: 1
+        page: 1,
+        user_info: {
+          name: "",
+          phone: ""
+        },
+        bookedTable,
+        ownerBook: false
       };
     } catch (error) {
       throw error;
@@ -200,16 +265,19 @@ export default {
       let result = JSON.parse(JSON.stringify(this.table.result));
       let header = this.table.header.slice(this.page, this.page + 7);
 
-      if (header.length == 7) {
-        header.push(this.table.header[this.table.header.length - 1]);
+      for (let i = 0; i < header.length; i++) {
+        if (header[i].button) {
+          header.splice(i, 1);
+        }
       }
 
+      header.push(this.table.header[this.table.header.length - 1]);
       header.unshift(this.table.header[0]);
 
       for (let i = 0; i < result.length; i++) {
         let subArray = result[i].slice(this.page, this.page + 7);
 
-        if (subArray.length == 7) {
+        if (header.length == 9) {
           subArray.push(result[i][result[i].length - 1]);
         }
 
@@ -230,7 +298,7 @@ export default {
           this.page -= 7;
         }
       } else {
-        if (this.page + 7 < this.table.header.length) {
+        if (this.page + 7 < this.table.header.length - 2) {
           this.page += 7;
         }
       }
@@ -301,6 +369,34 @@ export default {
       } else {
         this.$store.commit("setModals", { login: true, register: false });
       }
+    },
+
+    async proceedAsOwner() {
+      this.ownerBook = false;
+
+      let book_windows = this.booked.map(item => {
+        return { window: item.id, date: item.date };
+      });
+
+      let { user_info } = this;
+
+      let payload = {
+        book_windows,
+        playground: this.data.id,
+        user_info
+      };
+
+      try {
+        let response = await this.$store.dispatch("Book", payload);
+        this.$store.commit("setSuccess", {
+          show: true,
+          message: `Площадка ${this.data.name} на ${book_windows[0].date} ${this.booked[0].from_time}-${this.booked[this.booked.length - 1].to_time}, была успешно забронирована! \n\n\Зайдите в личный кабинет, чтобы узнать подробную информацию`
+        });
+
+        this.$router.push("/cabinet");
+      } catch (error) {
+        alert(error + "\n Попробуйте позже");
+      }
     }
   },
   mounted() {
@@ -309,6 +405,31 @@ export default {
 };
 </script>
 <style scoped>
+#collapse-2 {
+  width: 100%;
+  padding: 1em 2em;
+}
+
+.booked-table {
+  margin-bottom: 1em;
+
+  overflow: auto;
+}
+
+.booked-table > div {
+  background-color: #064482;
+  color: white;
+
+  padding: 1em;
+
+  font-size: 1.5em;
+
+  position: sticky;
+  left: 0;
+
+  /* font-weight: bold; */
+}
+
 .playground_main {
   width: 100%;
 
@@ -419,6 +540,10 @@ export default {
   padding: 0.75em 3.5em;
 
   border-radius: 5px;
+}
+
+.book_button > button:hover {
+  background-color: #347cc4;
 }
 
 .body > .inf {
@@ -616,6 +741,10 @@ td.booked {
 }
 
 @media (max-width: 767px) {
+  #collapse-2 {
+    padding: 1em 0;
+  }
+
   .playground_main {
     padding: 0;
   }

@@ -99,22 +99,18 @@
         </div>
       </div>
     </div>
-    <div class="add-inf">
+    <div class="add-inf" :style="{ justifyContent: showLess ? 'flex-end' : 'space-between' }">
       <transition name="slide">
-        <div
-          class="my-booked"
-          :style="{width: showMore || offsetWidth <= 767 ? '100%' : '48%'}"
-          v-if="!showMore2"
-        >
+        <div class="my-booked" v-if="!showLess">
           <div class="title">Мои брони</div>
-          <div class="result" :style="{width: showMore && offsetWidth >= 767 ? '48%' : '100%'}">
+          <div class="result">
             <div
               class="block"
               v-for="(item, index) in myBooks"
               :key="'myBooks' + index"
               :ref="'myBook' + index"
               :class="{ clicked: item.clicked }"
-              @click.stop="more(index, $event)"
+              @click.stop="more(index, 'showMore')"
             >
               <div
                 class="img"
@@ -129,7 +125,7 @@
                   class="small"
                   style="margin-bottom: 1.5em;"
                 >{{`Размеры - ${Math.round(item.playground.width)}x${Math.round(item.playground.length)}`}}</div>
-                <nuxt-link :to="`/playground/${item.playground.id}`">Подробнее</nuxt-link>
+                <nuxt-link :to="`/playground/${item.playground.id}`" @click.stop>Подробнее</nuxt-link>
               </div>
             </div>
             <div v-if="myBooks.length == 0">Ничего нет...</div>
@@ -164,102 +160,180 @@
           </transition>
         </div>
       </transition>
+
       <transition name="slide">
         <div
           class="my-booked"
-          :style="{width: showMore2 && offsetWidth <= 767 ? '100%' : '48%'}"
           v-if="(user.profile.is_provider || user.profile.is_creator) && !showMore"
+          style="flex-direction: row-reverse"
         >
           <div class="title">Мои объекты</div>
-          <transition name="slide">
-            <div class="more" v-if="showMore2" @click.stop>
-              <label>Имя Фамилия</label>
-              <b-form-input disabled></b-form-input>
-              <label>Контактные данные</label>
-              <b-form-input style="margin-bottom: 2em;" disabled></b-form-input>
-              <label>Дата и время брони</label>
-              <b-form-input style="margin-bottom: 2em;" disabled></b-form-input>
-              <label>Итоговая стоимость</label>
-              <b-form-input style="margin-bottom: 2em;" disabled></b-form-input>
-              <label>Статус оплаты</label>
-              <b-form-input style="margin-bottom: 2em;" disabled></b-form-input>
-              <label>Комментарии</label>
-              <b-form-textarea id="textarea" rows="3" max-rows="6" disabled></b-form-textarea>
-            </div>
-          </transition>
-          <div class="result" :style="{width: showMore2 && offsetWidth <= 767 ? '48%' : '100%'}">
+          <div class="result">
             <div
               class="block"
-              v-for="(item, index) in myBooks"
+              v-for="(item, index) in myObjects"
               :key="'myBooks' + index"
               :ref="'myBook' + index"
               :class="{ clicked: item.clicked }"
-              @click.stop="showMore2 = true"
+              @click.stop="more(index, 'showLess')"
             >
+              <transition name="shade">
+                <div class="loading" v-if="item.loading">
+                  <img src="/img/loading.gif" />
+                </div>
+              </transition>
               <div
                 class="img"
-                :style="{backgroundImage: `url(${item.playground.images.length > 0 ? item.playground.images[0].image : '/img/soccer.png'})`}"
+                :style="{backgroundImage: `url(${item.images.length > 0 ? item.images[0].image : '/img/soccer.png'})`}"
               ></div>
               <div class="content">
-                <div style="font-size: 1.5em">{{ item.playground.name }}</div>
-                <div>{{ `Полная стоимость - ${Math.round(item.total_cost)} тг` }}</div>
-                <div class="small">{{`Адрес - ${item.playground.location.address}`}}</div>
-                <div class="small">{{`Тип покрытия - ${item.playground.type}`}}</div>
+                <div style="font-size: 1.5em">{{ item.name }}</div>
+                <div>{{ `Стоимость - от ${Math.round(item.cost)} тг` }}</div>
+                <div class="small">{{`Адрес - ${item.location.address}`}}</div>
+                <div class="small">{{`Тип покрытия - ${item.type}`}}</div>
                 <div
                   class="small"
                   style="margin-bottom: 1.5em;"
-                >{{`Размеры - ${Math.round(item.playground.width)}x${Math.round(item.playground.length)}`}}</div>
-                <nuxt-link :to="`/playground/${item.playground.id}`">Подробнее</nuxt-link>
+                >{{`Размеры - ${Math.round(item.width)}x${Math.round(item.length)}`}}</div>
+                <nuxt-link :to="`/playground/${item.id}`" @click.stop>Подробнее</nuxt-link>
               </div>
             </div>
             <div v-if="myBooks.length == 0">Ничего нет...</div>
           </div>
+          <transition name="slide">
+            <div class="more change" v-if="showLess">
+              <div class="save">
+                <b-button @click.stop="saveChanges" :disabled="lessData.loading">Сохранить</b-button>
+              </div>
+              <div class="days">
+                <div
+                  :class="{active: lessData.selected == index}"
+                  v-for="(item, index) in lessData.weekDays"
+                  :key="index + 'day' +index"
+                  @click.stop="lessData.selected = index"
+                >{{ item }}</div>
+              </div>
+              <div class="open">
+                <div
+                  @click.stop="lessData.data[lessData.selected].is_closed = !lessData.data[lessData.selected].is_closed"
+                >
+                  <div
+                    class="toggle"
+                    :class="{'toggle-2': !lessData.data[lessData.selected].is_closed}"
+                  ></div>
+                </div>
+                <label>{{ !lessData.data[lessData.selected].is_closed ? 'открыто' : 'закрыто' }}</label>
+              </div>
+              <label style="color: #064482">Время и цена</label>
+              <div class="times" @click.stop>
+                <div
+                  class="time"
+                  v-for="(item, index) in lessData.data[lessData.selected].windows"
+                  :key="'times' + index"
+                >
+                  <b-form-input
+                    :value="`${item.from_time} - ${item.to_time}`"
+                    disabled
+                    style="margin-right: 1em"
+                  ></b-form-input>
+                  <b-form-input
+                    type="number"
+                    v-model="lessData.data[lessData.selected].windows[index].price"
+                  ></b-form-input>
+                </div>
+                <div class="cover" v-if="lessData.data[lessData.selected].is_closed"></div>
+              </div>
+            </div>
+          </transition>
         </div>
       </transition>
     </div>
   </div>
 </template>
 <script>
+let weekDays = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
+
 export default {
-  async asyncData({ store, redirect }) {
-    if (!store.state.user.id) redirect("/");
-    let user = JSON.parse(JSON.stringify(store.state.user));
-    user.names = user.first_name + " " + user.last_name;
+  async asyncData({ store, redirect, query }) {
+    if (!store.state.user.id) {
+      redirect("/");
+    } else {
+      let user = JSON.parse(JSON.stringify(store.state.user));
+      user.names = user.first_name + " " + user.last_name;
+      try {
+        let myObjects = [];
 
-    await store.dispatch("getMyBooks");
+        let successMessage = null;
 
-    return {
-      offsetWidth: 767,
+        if (query.payment_success) {
+          let success = JSON.parse(query.payment_success);
 
-      user,
-      loading: false,
-      imageData: user.profile.photo.includes("http")
-        ? user.profile.photo
-        : "http://80.241.42.214:8000" + user.profile.photo,
-      showMore: false,
-      showMore2: false,
-      moreData: {},
-      changePassword: {
-        show: false,
-        password: "",
-        new_password: "",
-        new_password2: "",
-        validation: {
-          password: {
-            state: null,
-            message: ""
-          },
-          new_password: {
-            state: null,
-            message: ""
-          },
-          new_password2: {
-            state: null,
-            message: ""
-          }
+          successMessage = `Предоплата брони ${success.name}, ${success.date} ${success.time} на сумму ${success.sum} тг прошла успешно.\n\nЗайдите в личный кабинет, чтобы узнать подоброную информацию`;
         }
+
+        await store.dispatch("getMyBooks");
+        if (user.profile.is_provider) {
+          myObjects = await store.dispatch("getMyObjects");
+        }
+
+        myObjects.forEach(item => {
+          item.clicked = false;
+        });
+
+        return {
+          successMessage,
+          user,
+          myObjects,
+          loading: false,
+          imageData:
+            user.profile &&
+            user.profile.photo &&
+            user.profile.photo.includes("http")
+              ? user.profile.photo
+              : "http://80.241.42.214:8000" + user.profile.photo,
+          showMore: false,
+          showLess: false,
+          moreData: {},
+          lessData: {
+            weekDays,
+            selected: 0,
+            data: [],
+            id: 0,
+            loading: false
+          },
+          changePassword: {
+            show: false,
+            password: "",
+            new_password: "",
+            new_password2: "",
+            validation: {
+              password: {
+                state: null,
+                message: ""
+              },
+              new_password: {
+                state: null,
+                message: ""
+              },
+              new_password2: {
+                state: null,
+                message: ""
+              }
+            }
+          }
+        };
+      } catch (error) {
+        redirect("/");
       }
-    };
+    }
+  },
+  mounted() {
+    if (this.successMessage) {
+      this.$store.commit("setSuccess", {
+        show: true,
+        message: this.successMessage
+      });
+    }
   },
   computed: {
     myBooks() {
@@ -267,6 +341,43 @@ export default {
     }
   },
   methods: {
+    async saveChanges() {
+      try {
+        let schedule = [];
+        let closed_days = [];
+
+        this.lessData.loading = true;
+
+        this.lessData.data.forEach((item, index) => {
+          if (item.is_closed) {
+            closed_days.push(item.day);
+          }
+
+          item.windows.forEach((item2, index2) => {
+            schedule.push({
+              day: item.day,
+              from_time: item2.from_time,
+              to_time: item2.to_time,
+              price: item2.price
+            });
+          });
+        });
+
+        let response = await this.$store.dispatch("putPlayground", {
+          data: { schedule, closed_days },
+          id: this.lessData.id
+        });
+
+        this.$store.commit("setSuccess", {
+          show: true,
+          message: "Успех!"
+        });
+
+        this.lessData.loading = false;
+      } catch (error) {
+        alert(error.message);
+      }
+    },
     async sendPassword() {
       try {
         let payload = JSON.parse(JSON.stringify(this.changePassword));
@@ -303,26 +414,54 @@ export default {
         }
       }
     },
-    more(index) {
+    async more(index, show) {
+      this[show] = false;
+
+      if (show == "showMore") {
+        this.myBooks.forEach(item => {
+          item.clicked = false;
+        });
+
+        this.moreData = this.myBooks[index];
+        this.myBooks[index].clicked = true;
+      } else {
+        this.myObjects.forEach(item => {
+          item.clicked = false;
+        });
+
+        this.myObjects[index].clicked = true;
+        this.myObjects[index].loading = true;
+
+        let playground = await this.$store.dispatch(
+          "getPlayground",
+          this.myObjects[index].id
+        );
+
+        this.lessData.id = this.myObjects[index].id;
+
+        let data = [];
+        this.lessData.weekDays.forEach((item, index) => {
+          let day = playground.days.find(el => el.day == index + 1);
+          data.push(day);
+        });
+
+        this.lessData.data = data;
+        this.myObjects[index].loading = false;
+      }
+
+      this[show] = true;
+    },
+    close() {
       this.showMore = false;
+      this.showLess = false;
 
       this.myBooks.forEach(item => {
         item.clicked = false;
       });
 
-      this.moreData = this.myBooks[index];
-      this.myBooks[index].clicked = true;
-
-      setTimeout(() => {
-        this.showMore = true;
-      }, 100);
-    },
-    close() {
-      this.showMore = false;
-      this.showMore2 = false;
-
-      this.myBooks.forEach(item => {
+      this.myObjects.forEach(item => {
         item.clicked = false;
+        item.loading = false;
       });
     },
     previewFile(event) {
@@ -389,16 +528,145 @@ export default {
         this.loading = false;
       }
     }
-  },
-
-  beforeMount() {
-    this.offsetWidth = document.documentElement.offsetWidth;
-    console.log(this.offsetWidth);
   }
 };
 </script>
 
-<style>
+<style scoped>
+.change > * {
+  margin-bottom: 1em;
+}
+
+.change {
+  font-size: 12px !important;
+}
+
+.change > .save {
+  position: absolute;
+
+  bottom: -2.25em;
+  left: 9em;
+
+  padding: 0 3em;
+
+  background-color: white;
+}
+
+.save > button {
+  background-color: #064482;
+  color: white;
+
+  border: none;
+
+  padding: 0.5em 3em;
+}
+
+.save > button:hover {
+  background-color: #5a96d3;
+}
+
+.times {
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+}
+
+.times > .time {
+  display: flex;
+  margin-bottom: 1em;
+}
+
+.times > .cover {
+  background-color: rgba(255, 255, 255, 0.7);
+
+  position: absolute;
+
+  height: 100%;
+  width: 100%;
+
+  z-index: 1;
+}
+
+.days {
+  display: flex;
+}
+
+.days > div {
+  border: solid 1px #064482;
+  margin-left: -1px;
+
+  font-size: 1.75em;
+  width: 100%;
+
+  text-align: center;
+
+  color: #06448262;
+
+  backdrop-filter: blur(30px);
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+
+  cursor: pointer;
+}
+
+.days > div:hover {
+  background-color: #c8d5e3;
+  color: #064482;
+}
+
+.days > .active {
+  background-color: #c8d5e3;
+  color: #064482;
+}
+
+.open {
+  display: flex;
+  color: #064482;
+
+  align-items: center;
+}
+
+.open > div {
+  width: 3em;
+  height: 1.5em;
+
+  border-radius: 1em;
+
+  background-color: #064482;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+  cursor: pointer;
+
+  transition: 0.5s;
+}
+
+div > .toggle {
+  background-color: white;
+  border-radius: 1em;
+
+  height: 1.35em;
+  width: 1.35em;
+
+  position: absolute;
+
+  right: 1px;
+
+  transition: 0.1s;
+}
+
+div > .toggle-2 {
+  right: calc(3em - 1.35em - 1px);
+}
+
+.open > label {
+  margin: 0;
+  margin-left: 0.5em;
+}
+
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.5s;
@@ -446,7 +714,8 @@ export default {
 }
 
 .image-uploader > img {
-  height: 100%;
+  background-color: white;
+  width: 100%;
 
   position: absolute;
 }
@@ -493,22 +762,28 @@ export default {
 
   display: flex;
   justify-content: space-between;
+
+  height: 1%;
 }
 
 .my-booked > .more {
   width: 48%;
-  min-width: 40em;
+  min-width: 100%;
 
-  padding: 5em;
+  padding: 3em;
 
   border-radius: 36px;
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
   border: solid 1px #064482;
 
+  transition: 0.5s;
+  margin-left: 1.5em;
+  margin-right: 1.5em;
+
   position: relative;
 
-  transition: 0.5s;
-  margin-right: 1.5em;
+  height: 1%;
+  min-height: fit-content;
 }
 
 .more > label {
@@ -528,12 +803,15 @@ export default {
 }
 
 .my-booked > .result {
+  min-width: 100%;
   width: 100%;
 
   display: flex;
   align-items: center;
 
   flex-direction: column;
+
+  height: 1%;
 }
 
 .result > .block {
@@ -549,6 +827,8 @@ export default {
 
   margin-bottom: 1em;
   transition: 0.5s;
+
+  position: relative;
 }
 
 .result > .block:hover {
@@ -575,13 +855,37 @@ export default {
   margin-bottom: 1em;
   position: relative;
 
-  max-width: calc(100% - 10em);
+  width: 60%;
+}
+
+.block > .loading {
+  position: absolute;
+
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 2em;
+
+  background-color: rgba(255, 255, 255, 0.7);
+
+  z-index: 1;
+}
+
+.loading > img {
+  height: 100%;
 }
 
 .content > div {
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  width: 100%;
+  cursor: default;
 }
 
 .content > .small {
@@ -730,8 +1034,53 @@ export default {
     left: 1em;
   }
 
+  .add-inf > .my-booked {
+    width: 100%;
+  }
+
+  .block > .content {
+    width: auto;
+  }
+
+  .content > div {
+    width: auto;
+    white-space: normal;
+  }
+
   .my-booked > .more {
-    min-width: 30em;
+    width: 100%;
+    max-width: 100%;
+
+    height: 100%;
+
+    max-height: 100%;
+    overflow: auto;
+
+    top: 0;
+    left: 0;
+
+    padding-bottom: 5em;
+
+    margin: 0 !important;
+    position: fixed;
+
+    z-index: 9999;
+
+    background-color: white;
+  }
+
+  .more > .save {
+    bottom: 0;
+    left: 0;
+
+    padding: 0;
+    margin: 0;
+
+    width: 100%;
+  }
+
+  .save > button {
+    width: 100%;
   }
 }
 </style>

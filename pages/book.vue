@@ -141,7 +141,7 @@ export default {
         pg_salt: "40d9fgdflgkdf8",
         pg_success_url: `${
           process.env.baseUrl
-        }?payment_success=${JSON.stringify(success)}`,
+        }/cabinet?payment_success=${JSON.stringify(success)}`,
         pg_testing_mode: 1,
         pg_user_phone: this.user.profile.phone,
         pg_user_contact_email: this.user.email

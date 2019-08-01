@@ -38,10 +38,8 @@
           variant="outline-light"
           @click="open('login')"
           style="transition: 0.5s"
-          :disabled="loading"
           class="nav-button"
         >
-          <b-spinner small v-if="loading"></b-spinner>
           <span>ВОЙТИ</span>
         </b-button>
 
@@ -173,32 +171,6 @@
 </template>
 <script>
 export default {
-  async beforeMount() {
-    let cookie = document.cookie.split("; ");
-    let objCookie = {};
-
-    cookie.forEach(item => {
-      objCookie[item.split("=")[0]] = item.split("=")[1];
-    });
-
-    if (objCookie.token && objCookie.token != "undefined") {
-      this.$store.commit("setUser", {
-        token: objCookie.token,
-        id: objCookie.user_d
-      });
-
-      await this.$store.dispatch("getUser", objCookie.user_id);
-
-      let user = { ...this.$store.state.user };
-      user.token = objCookie.token;
-
-      this.$store.commit("setUser", user);
-
-      this.loading = false;
-    } else {
-      this.loading = false;
-    }
-  },
   methods: {
     setCount(send) {
       this.count = 90000;
@@ -325,7 +297,6 @@ export default {
       count: 90000,
       enterVerify: false,
       verifyCode: "",
-      loading: true,
       form_loading: false,
       errors: {
         verify: {

@@ -81,7 +81,7 @@ $check-length: 36px;
   align-items: center;
   display: flex;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 50% !important;
   height: 10em;
   width: 10em;
   background-color: #33cc33;
