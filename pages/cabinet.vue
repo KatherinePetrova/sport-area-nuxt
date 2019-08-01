@@ -251,6 +251,7 @@
   </div>
 </template>
 <script>
+import api from "~/service/api.js";
 let weekDays = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
 
 export default {

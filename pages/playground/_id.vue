@@ -115,7 +115,8 @@
               <td
                 :class="{
                 active: subItem.active && !subItem.is_booked, 
-                booked: subItem.is_booked, 
+                booked: subItem.is_booked && subItem.is_paid,
+                'booked-but-not-paid': subItem.is_booked && !subItem.is_paid,
                 book: subItem.id && !subItem.is_booked
               }"
                 v-for="(subItem, subIndex) in item"
@@ -202,12 +203,17 @@ export default {
 
       for (let i = 0; i < days.length; i++) {
         let dates = [];
+
         for (let j = 0; j < days[i].windows.length; j++) {
           if (days[i].windows[j].is_booked) {
+            console.log(days[i].windows[j]);
             let window = {
               Имя: days[i].windows[j].booked_user_info.name,
               Телефон: days[i].windows[j].booked_user_info.phone,
-              Время: `${days[i].windows[j].from_time}-${days[i].windows[j].to_time}`,
+              Время: {
+                from: days[i].windows[j].from_time,
+                to: days[i].windows[j].to_time
+              },
               Статус: days[i].windows[j].is_paid
                 ? "Оплачено"
                 : "Ожидается оплата"
@@ -215,7 +221,6 @@ export default {
             dates.push(window);
           }
         }
-
         if (dates.length > 0) {
           bookedTable.push({ date: days[i].date, dates });
         }
@@ -735,6 +740,11 @@ td.active {
 
 td.booked {
   background-color: #ffbbbb;
+  color: #0745822f;
+}
+
+td.booked-but-not-paid {
+  background-color: rgba(255, 237, 5, 0.5);
   color: #0745822f;
 }
 

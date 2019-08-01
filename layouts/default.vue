@@ -12,7 +12,12 @@ import FooterComponent from "~/components/footer.vue";
 import Success from "~/components/success.vue";
 
 export default {
-  components: { HeaderComponent, FooterComponent, Success }
+  components: { HeaderComponent, FooterComponent, Success },
+  head() {
+    return {
+      title: "SportArea.kz | Онлайн бронирование спортивных площадок"
+    };
+  }
 };
 </script>
 <style>
