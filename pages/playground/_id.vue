@@ -196,8 +196,6 @@ export default {
         data.time_to_holiday_days
       ];
 
-      console.log(data.days);
-
       let table = createTable(data.days, times);
 
       let bookedTable = [];

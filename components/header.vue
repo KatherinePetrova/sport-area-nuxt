@@ -51,13 +51,21 @@
           </div>
         </b-modal>
 
+        <b-modal v-model="modals.forgot.show" hide-footer hide-header>
+          <b-form @submit.prevent="sendForgot()">
+            <label style="text-align: center">Восстановление пароля</label>
+            <b-form-input type="email" placeholder="Введите E-mail"></b-form-input>
+            <b-button type="submit" style="margin-top: 2em">Далее</b-button>
+          </b-form>
+        </b-modal>
+
         <b-modal v-model="modalsShow.login" hide-footer hide-header>
           <b-form @submit.prevent="auth()">
             <label>Авторизация</label>
             <b-form-input placeholder="Логин" v-model="modals.login.username"></b-form-input>
             <b-form-input placeholder="Пароль" v-model="modals.login.password" type="password"></b-form-input>
             <b-form-invalid-feedback :state="modals.login.validation">Неверный логин или пароль</b-form-invalid-feedback>
-            <b-link style="margin-bottom: 2em">Забыли пароль</b-link>
+            <b-link style="margin-bottom: 2em" @click="openForgot">Забыли пароль</b-link>
             <b-button
               type="submit"
               class="form_button"
@@ -172,6 +180,11 @@
 <script>
 export default {
   methods: {
+    openForgot() {
+      this.$store.commit("setModals", { login: false, register: false });
+      this.modals.forgot.show = true;
+    },
+
     setCount(send) {
       this.count = 90000;
       this.enterVerify = true;
@@ -327,6 +340,10 @@ export default {
         }
       },
       modals: {
+        forgot: {
+          show: false,
+          model: ""
+        },
         login: {
           username: null,
           password: null,

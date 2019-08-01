@@ -198,7 +198,7 @@
                 <nuxt-link :to="`/playground/${item.id}`" @click.stop>Подробнее</nuxt-link>
               </div>
             </div>
-            <div v-if="myBooks.length == 0">Ничего нет...</div>
+            <div v-if="myObjects.length == 0">Ничего нет...</div>
           </div>
           <transition name="slide">
             <div class="more change" v-if="showLess">
@@ -1059,7 +1059,7 @@ div > .toggle-2 {
     top: 0;
     left: 0;
 
-    padding-bottom: 5em;
+    padding-bottom: 2em;
 
     margin: 0 !important;
     position: fixed;
@@ -1070,6 +1070,8 @@ div > .toggle-2 {
   }
 
   .more > .save {
+    position: fixed;
+
     bottom: 0;
     left: 0;
 
@@ -1077,6 +1079,8 @@ div > .toggle-2 {
     margin: 0;
 
     width: 100%;
+
+    z-index: 3;
   }
 
   .save > button {
