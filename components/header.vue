@@ -54,8 +54,14 @@
         <b-modal v-model="modals.forgot.show" hide-footer hide-header>
           <b-form @submit.prevent="sendForgot()">
             <label style="text-align: center">Восстановление пароля</label>
-            <b-form-input type="email" placeholder="Введите E-mail"></b-form-input>
-            <b-button type="submit" style="margin-top: 2em">Далее</b-button>
+            <b-form-input type="email" placeholder="Введите E-mail" v-model="modals.forgot.model"></b-form-input>
+            <b-button type="submit" style="margin-top: 2em">
+              <b-spinner
+                small
+                style="margin-right: 0.5em; border-radius: 50% !important"
+                v-if="modals.forgot.loading"
+              ></b-spinner>Далее
+            </b-button>
           </b-form>
         </b-modal>
 
@@ -73,7 +79,11 @@
               style="transition: 0.5s"
               :disabled="form_loading"
             >
-              <b-spinner small style="margin-right: 0.5em" v-if="form_loading"></b-spinner>Войти
+              <b-spinner
+                small
+                style="margin-right: 0.5em; border-radius: 50% !important"
+                v-if="form_loading"
+              ></b-spinner>Войти
             </b-button>
 
             <b-button class="form_button" @click="open('register')" variant="info">Регистрация</b-button>
@@ -108,6 +118,7 @@
               placeholder="Номер телефона"
               type="tel"
               v-model="modals.register.profile.phone"
+              v-mask="'+7 (###) ### ## ##'"
               required
             ></b-form-input>
             <b-form-input
@@ -183,6 +194,27 @@ export default {
     openForgot() {
       this.$store.commit("setModals", { login: false, register: false });
       this.modals.forgot.show = true;
+    },
+
+    async sendForgot() {
+      try {
+        if (this.modals.forgot.model == "") return;
+
+        this.modals.forgot.loading = true;
+
+        let payload = { email: this.modals.forgot.model };
+        let response = await this.$store.dispatch("resetPassword", payload);
+
+        this.modals.forgot.loading = false;
+        this.modals.forgot.show = false;
+        this.$store.commit("setSuccess", {
+          show: true,
+          message: `На вашу почту ${payload.email} была отправлена инструкция по восстановлению пароля.`
+        });
+      } catch (error) {
+        this.modals.forgot.loading = false;
+        alert(error.message + "\n\n Попробуйте повторить попытку позднее");
+      }
     },
 
     setCount(send) {
@@ -342,7 +374,8 @@ export default {
       modals: {
         forgot: {
           show: false,
-          model: ""
+          model: "",
+          loading: false
         },
         login: {
           username: null,
@@ -397,8 +430,9 @@ export default {
   .logo-title {
     display: none;
   }
+
   .nav-button {
-    font-size: 0.8em;
+    font-size: 0.7em;
     height: 100%;
   }
 }

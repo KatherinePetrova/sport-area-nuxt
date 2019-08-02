@@ -13,7 +13,7 @@
         ></div>
         <div class="content">
           <span style="font-size: 1.5em">{{ item.name }}</span>
-          <span style="font-size: 1.5em">{{ `от ${item.cost} тг/ч` }}</span>
+          <span style="font-size: 1.5em">{{ `от ${item.cost*2} тг/ч` }}</span>
           <span>{{ `Адрес - ${item.location.address}` }}</span>
           <span>{{ `Тип - ${item.type}` }}</span>
           <span
@@ -231,9 +231,9 @@ export default {
 
     padding: 0.5em 0;
 
-    width: 100%;
-    right: 0;
-    bottom: -1em;
+    width: calc(100% + 4px);
+    right: -2px;
+    bottom: calc(-1em - 2px);
   }
 
   .content > a {
@@ -244,6 +244,7 @@ export default {
     padding: 0.75em 0;
     width: 182%;
     text-align: center;
+    text-decoration: none;
 
     margin: 0;
 

@@ -209,7 +209,30 @@ export default {
 .slick-dots {
   display: flex;
   justify-content: center;
+
+  margin: 0;
+  padding: 0;
+
   margin-top: 0.5em;
+
+  height: 0.5rem;
+}
+
+.slick-dots > li {
+  background-color: white;
+  border: solid 1px #064482;
+  border-radius: 50% !important;
+
+  width: 0.5rem;
+  margin-right: 0.5em;
+}
+
+.slick-dots > li.slick-active {
+  background-color: #064482;
+}
+
+.slick-dots > li > button {
+  opacity: 0;
 }
 
 @media (max-width: 768px) {

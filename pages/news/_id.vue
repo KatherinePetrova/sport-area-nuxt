@@ -3,7 +3,7 @@
     <div class="main">
       <div class="title">Новости</div>
       <h1>{{ data.title }}</h1>
-      <b-carousel controls background="#ababab" indicators class="carousel" img-height="100%">
+      <b-carousel controls background="white" indicators class="carousel" img-height="100%">
         <b-carousel-slide
           :img-src="item.image"
           v-for="(item, index) in data.images"
@@ -89,9 +89,6 @@ export default {
   height: 18em;
 
   margin-top: 1em;
-
-  border: solid 1px #064482;
-  border-radius: 20px;
 
   overflow: hidden;
 

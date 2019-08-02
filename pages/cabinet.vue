@@ -39,6 +39,7 @@
             type="password"
             placeholder="Изменить"
             @click="changePassword.show = true"
+            ref="changePassword"
           ></b-form-input>
           <b-modal v-model="changePassword.show" hide-footer hide-header>
             <b-form @submit.prevent="sendPassword">
@@ -188,7 +189,7 @@
               ></div>
               <div class="content">
                 <div style="font-size: 1.5em">{{ item.name }}</div>
-                <div>{{ `Стоимость - от ${Math.round(item.cost)} тг` }}</div>
+                <div>{{ `Стоимость - от ${Math.round(item.cost*2)} тг` }}</div>
                 <div class="small">{{`Адрес - ${item.location.address}`}}</div>
                 <div class="small">{{`Тип покрытия - ${item.type}`}}</div>
                 <div
@@ -328,6 +329,13 @@ export default {
       }
     }
   },
+
+  watch: {
+    "changePassword.show"(newValue) {
+      let element = this.$refs.changePassword;
+      element.blur();
+    }
+  },
   mounted() {
     if (this.successMessage) {
       this.$store.commit("setSuccess", {
@@ -398,7 +406,7 @@ export default {
 
         delete payload.new_password2;
 
-        // let response = await this.$store.dispatch("changePassword", payload);
+        let response = await this.$store.dispatch("changePassword", payload);
 
         this.changePassword.show = false;
         this.$store.commit("setSuccess", {

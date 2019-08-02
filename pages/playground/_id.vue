@@ -14,7 +14,11 @@
             <b-form @submit.prevent="proceedAsOwner">
               <label style="margin-botom: 1em">Клиент</label>
               <b-form-input placeholder="Имя клиента" v-model="user_info.name"></b-form-input>
-              <b-form-input placeholder="Телефон клиента" v-model="user_info.phone"></b-form-input>
+              <b-form-input
+                placeholder="Телефон клиента"
+                v-model="user_info.phone"
+                v-mask="'+7 (###) ### ## ##'"
+              ></b-form-input>
               <b-button type="submit" style="margin-top: 1em">Подтвердить</b-button>
             </b-form>
           </b-modal>
@@ -97,6 +101,20 @@
         </div>
         <div class="booking">
           <div class="title">Бронирование</div>
+          <div class="legend">
+            <div>
+              <div class="color" style="background-color: #bbffbb"></div>
+              <div class="text">- забронировано вами</div>
+            </div>
+            <div>
+              <div class="color" style="background-color: #ffbbbb"></div>
+              <div class="text">- забронировано и оплачено</div>
+            </div>
+            <div>
+              <div class="color" style="background-color: rgba(255, 237, 5, 0.5)"></div>
+              <div class="text">- ожидается оплата</div>
+            </div>
+          </div>
           <table border="1">
             <tr>
               <td
@@ -206,7 +224,6 @@ export default {
 
         for (let j = 0; j < days[i].windows.length; j++) {
           if (days[i].windows[j].is_booked) {
-            console.log(days[i].windows[j]);
             let window = {
               Имя: days[i].windows[j].booked_user_info.name,
               Телефон: days[i].windows[j].booked_user_info.phone,
@@ -314,7 +331,8 @@ export default {
       let table = this.table.result;
 
       table[x][y].active = !table[x][y].active;
-      if (table[x + 1] && !table[x + 1][y].is_booked) {
+
+      if (table[x + 1] && table[x + 1][y].id && !table[x + 1][y].is_booked) {
         table[x + 1][y].active = !table[x + 1][y].active;
       }
 
@@ -584,6 +602,29 @@ export default {
   position: relative;
 }
 
+.booking > .legend {
+  display: flex;
+}
+
+.legend > div {
+  height: 1.5rem;
+  margin-right: 3rem;
+  margin-left: 0.5rem;
+
+  display: flex;
+  align-items: center;
+
+  color: #064482;
+}
+
+.legend > div > .color {
+  height: 1rem;
+  width: 1rem;
+
+  margin-right: 0.5rem;
+  background-color: #064482;
+}
+
 .booking > .title {
   font-weight: normal;
   font-style: normal;
@@ -671,12 +712,10 @@ export default {
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
 
   cursor: pointer;
-
-  transition: 1s;
 }
 
 .images > .img:hover {
-  box-shadow: 0 13px 16px 0 rgba(0, 0, 0, 0.8);
+  box-shadow: 0 5px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .images > .active {
@@ -767,10 +806,10 @@ td.booked-but-not-paid {
   }
 
   .body > .book_button {
-    left: 0;
+    left: -2px;
     padding: 0;
 
-    width: 100%;
+    width: calc(100% + 4px);
   }
 
   .book_button > button {
@@ -786,6 +825,13 @@ td.booked-but-not-paid {
   .body > .booking {
     padding: 0;
     overflow: auto;
+  }
+
+  .booking > .legend {
+    flex-direction: column;
+    position: sticky;
+
+    left: 0;
   }
 
   .booking > .title {
@@ -815,6 +861,8 @@ td.booked-but-not-paid {
   }
 
   .inf > .main_image {
+    margin-top: 2.5em;
+
     height: 15em;
     margin-bottom: 1em;
   }

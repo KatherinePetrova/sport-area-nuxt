@@ -40,7 +40,10 @@ module.exports = {
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: [{ src: "~plugins/vue-slick.js", ssr: false }],
+  plugins: [
+    { src: "~plugins/vue-slick.js", ssr: false },
+    { src: "~plugins/vue-the-mask.js", ssr: false }
+  ],
   /*
    ** Nuxt.js modules
    */

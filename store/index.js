@@ -345,6 +345,16 @@ const createStore = () => {
         }
       },
 
+      async resetPassword({ state }, payload) {
+        try {
+          let response = await api().post(`auth/password_reset/`, payload);
+
+          return response.data;
+        } catch (error) {
+          throw error;
+        }
+      },
+
       async addPlayground({ state }, { payload, form }) {
         try {
           let response = await api().post("playgrounds/", payload, {

@@ -124,7 +124,7 @@
 
             <div class="content">
               <span style="font-size: 1.5em">{{ item.name }}</span>
-              <span style="font-size: 1.5em">{{ `от ${item.cost} тг/ч` }}</span>
+              <span style="font-size: 1.5em">{{ `от ${item.cost*2} тг/ч` }}</span>
               <span>{{ `Адрес - ${item.location.address}` }}</span>
               <span>{{ `Тип - ${item.type}` }}</span>
               <span
@@ -252,7 +252,7 @@ export default {
               position: relative;"
           >
             <span style="font-size: 1.5em">${item.name}</span>
-            <span style="font-size: 1.2em">от ${item.cost} тг/ч</span>
+            <span style="font-size: 1.2em">от ${item.cost * 2} тг/ч</span>
             <span>Адрес - ${item.location.address}</span>
             <span>Тип - ${item.type}</span>
             <span>Размеры - ${Math.round(item.length)}х${Math.round(
