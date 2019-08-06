@@ -157,27 +157,6 @@
             style="transition: 0.5"
           >{{ `Предоплата ${data.prepay}%: ${price.pre} т` }}</span>
         </transition-group>
-
-        <template v-if="user && user.id == data.owner">
-          <b-button
-            v-b-toggle.collapse-2
-            style="margin-left: 2em; margin-bottom: 1em"
-          >Информация о бронировании</b-button>
-          <b-collapse id="collapse-2">
-            <label
-              v-if="table.length == 0"
-              style="color: #064482"
-            >Вашу площадку еще никто не бронировал : ^)</label>
-            <div
-              class="booked-table"
-              v-for="(item, index) in bookedTable"
-              :key="'tableslot' + index"
-            >
-              <div>{{ item.date }}</div>
-              <b-table hover :items="item.dates"></b-table>
-            </div>
-          </b-collapse>
-        </template>
       </div>
     </transition>
   </div>
@@ -217,32 +196,6 @@ export default {
 
       let table = createTable(data.days, times);
 
-      let bookedTable = [];
-
-      for (let i = 0; i < days.length; i++) {
-        let dates = [];
-
-        for (let j = 0; j < days[i].windows.length; j++) {
-          if (days[i].windows[j].is_booked) {
-            let window = {
-              Имя: days[i].windows[j].booked_user_info.name,
-              Телефон: days[i].windows[j].booked_user_info.phone,
-              Время: {
-                from: days[i].windows[j].from_time,
-                to: days[i].windows[j].to_time
-              },
-              Статус: days[i].windows[j].is_paid
-                ? "Оплачено"
-                : "Ожидается оплата"
-            };
-            dates.push(window);
-          }
-        }
-        if (dates.length > 0) {
-          bookedTable.push({ date: days[i].date, dates });
-        }
-      }
-
       return {
         data,
         category,
@@ -254,7 +207,6 @@ export default {
           name: "",
           phone: ""
         },
-        bookedTable,
         ownerBook: false
       };
     } catch (error) {
@@ -330,18 +282,31 @@ export default {
       let { x, y } = position;
       let table = this.table.result;
 
-      table[x][y].active = !table[x][y].active;
-
-      if (table[x + 1] && table[x + 1][y].id && !table[x + 1][y].is_booked) {
-        table[x + 1][y].active = !table[x + 1][y].active;
-      }
-
-      for (let i = 0; i < table.length; i++) {
-        for (let j = 0; j < table[i].length; j++) {
-          if (table[i][j].active && j != y) {
-            table[i][j].active = !table[i][j].active;
+      if (table[x][y].active) {
+        table[x][y].active = false;
+      } else {
+        this.clearTable(table, { y });
+        if (
+          ((table[x + 1] && !table[x + 1][y].active) || !table[x + 1]) &&
+          (table[x - 1] && !table[x - 1][y].active)
+        ) {
+          this.clearTable(table, { x });
+          if (
+            table[x + 1] &&
+            table[x + 1][y].id &&
+            !table[x + 1][y].is_booked
+          ) {
+            table[x + 1][y].active = true;
+          } else if (
+            table[x - 1] &&
+            table[x - 1][y].id &&
+            !table[x - 1][y].is_booked
+          ) {
+            table[x - 1][y].active = true;
           }
         }
+
+        table[x][y].active = true;
       }
 
       this.booked = [];
@@ -351,13 +316,22 @@ export default {
         }
       }
     },
-    unbook(item) {
-      let { x, y } = item.arrayCoor;
-      this.table.result[x][y].active = false;
 
-      let index = this.booked.findIndex(el => el.id == item.id);
-      this.booked.splice(index, 1);
+    clearTable(table, position) {
+      let { x, y } = position;
+
+      for (let i = 0; i < table.length; i++) {
+        for (let j = 0; j < table[i].length; j++) {
+          if (x && x != i) {
+            table[i][j].active = false;
+          }
+          if (y && y != j) {
+            table[i][j].active = false;
+          }
+        }
+      }
     },
+
     structure() {
       let result = "";
       for (let key in this.data) {

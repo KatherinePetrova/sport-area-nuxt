@@ -142,7 +142,6 @@ export default {
         pg_success_url: `${
           process.env.baseUrl
         }/cabinet?payment_success=${JSON.stringify(success)}`,
-        pg_testing_mode: 1,
         pg_user_phone: this.user.profile.phone,
         pg_user_contact_email: this.user.email
       };

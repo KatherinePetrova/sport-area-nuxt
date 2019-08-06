@@ -175,6 +175,21 @@ const createStore = () => {
         }
       },
 
+      async getPlaygroundBooking({ state, commit }, id) {
+        try {
+          let response = await api().get(`playgrounds/${id}/bookings/`, {
+            headers: {
+              Authorization: `Token ${state.user.token}`
+            }
+          });
+          let { data } = response;
+
+          return data;
+        } catch (error) {
+          throw error;
+        }
+      },
+
       async putPlayground({ state, commit }, payload) {
         try {
           let { id, data } = payload;

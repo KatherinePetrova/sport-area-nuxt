@@ -42,7 +42,8 @@ module.exports = {
    */
   plugins: [
     { src: "~plugins/vue-slick.js", ssr: false },
-    { src: "~plugins/vue-the-mask.js", ssr: false }
+    { src: "~plugins/vue-the-mask.js", ssr: false },
+    { src: "~plugins/vue-datetime-picker.js", ssr: false }
   ],
   /*
    ** Nuxt.js modules
