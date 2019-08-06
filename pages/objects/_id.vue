@@ -23,20 +23,25 @@
             ></date-picker>
           </no-ssr>
         </div>
+
         <label style="margin: 0">Тип бронирования</label>
         <b-form-select v-model="filter.type">
           <option :value="null">Все</option>
-          <option :value="1">Вручную</option>
-          <option :value="2">Онлайн</option>
+          <option :value="true">Вручную</option>
+          <option :value="false">Онлайн</option>
+        </b-form-select>
+
+        <label style="margin: 0">Сортировать по дате</label>
+        <b-form-select v-model="filter.sort">
+          <option :value="-1">Сначала новые</option>
+          <option :value="1">Сначала старые</option>
         </b-form-select>
       </div>
       <div class="data">
         <div class="title">Информация о бронировании</div>
-        <div class="info">{{ `Общее количество броней за период: ${booking_data.total_bookings}` }}</div>
-        <div class="info">{{ `Прибыль за период: ${booking_data.total_income}` }}</div>
-        <div
-          class="info"
-        >{{ `Общее количество часов броней за период: ${booking_data.total_book_hours}` }}</div>
+        <div class="info">{{ `Общее количество броней за период: ${numbers.counts}` }}</div>
+        <div class="info">{{ `Прибыль за период: ${numbers.income}` }}</div>
+        <div class="info">{{ `Общее количество часов броней за период: ${numbers.hours}` }}</div>
         <div class="pred-table">
           <div class="table">
             <div class="table-row">
@@ -46,22 +51,27 @@
               <div class="table-cell">Статус</div>
             </div>
           </div>
-          <div class="table" v-for="(item, index) in table" :key="'table' + index">
-            <div
-              class="date"
-            >{{ `${item.date.getDate()} ${months[item.date.getMonth()]} ${item.date.getFullYear()}` }}</div>
-            <div
-              class="table-row table-hover"
-              v-for="(el, ind) in item.items"
-              :key="'table-row' + index + ind"
-            >
+
+          <label style="text-align: center; width: 100%;" v-if="table.length == 0">Ничего не найдено</label>
+
+          <transition-group name="page">
+            <div class="table" v-for="(item, index) in table" :key="'table' + index">
               <div
-                class="table-cell"
-                v-for="(obj, objInd) in el"
-                :key="'table-cell' + index + ind + objInd"
-              >{{ obj }}</div>
+                class="date"
+              >{{ `${item.date.getDate()} ${months[item.date.getMonth()]} ${item.date.getFullYear()}` }}</div>
+              <div
+                class="table-row table-hover"
+                v-for="(el, ind) in item.items"
+                :key="'table-row' + index + ind"
+              >
+                <div
+                  class="table-cell"
+                  v-for="(obj, objInd) in el"
+                  :key="'table-cell' + index + ind + objInd"
+                >{{ obj }}</div>
+              </div>
             </div>
-          </div>
+          </transition-group>
         </div>
       </div>
     </div>
@@ -101,7 +111,8 @@ export default {
           language: ru
         },
         search: "",
-        type: null
+        type: null,
+        sort: -1
       },
       months
     };
@@ -118,18 +129,73 @@ export default {
       });
 
       result.forEach(item => {
-        item.items = bookings.filter(el => el.date == item.compare);
-        for (let i = 0; i < item.items.length; i++) {
-          item.items[i] = {
-            Имя: item.items[i].user_info.name,
-            Телефон: item.items[i].user_info.phone,
-            Время: item.items[i].time_range,
-            Статус: item.items[i].is_paid ? "Оплачено" : "Ожидается оплата"
-          };
+        item.add_inf = [];
+        item.add_inf = bookings.filter(
+          el =>
+            el.date == item.compare &&
+            el.user_info.name.includes(this.filter.search) &&
+            new Date(el.date).getTime() >= this.filter.date.from.getTime() &&
+            new Date(el.date).getTime() <= this.filter.date.to.getTime()
+        );
+
+        if (typeof this.filter.type != "object") {
+          item.add_inf = item.add_inf.filter(
+            el => el.is_owner == this.filter.type
+          );
+        }
+
+        item.items = [];
+
+        for (let i = 0; i < item.add_inf.length; i++) {
+          item.items.push({
+            Имя: item.add_inf[i].user_info.name,
+            Телефон: item.add_inf[i].user_info.phone,
+            Время: item.add_inf[i].time_range,
+            Статус: item.add_inf[i].is_paid ? "Оплачено" : "Ожидается оплата"
+          });
         }
       });
 
+      result.sort((a, b) => {
+        if (a.date.getTime() > b.date.getTime()) {
+          return this.filter.sort;
+        }
+      });
+
+      for (let i = 0; i < result.length; i++) {
+        if (result[i].add_inf.length == 0) {
+          result.splice(i, 1);
+          i--;
+        }
+      }
+
       return result;
+    },
+
+    numbers() {
+      let hours = { hours: 0, minutes: 0 };
+      let income = 0;
+      let counts = 0;
+
+      let table = this.table;
+      for (let i = 0; i < table.length; i++) {
+        for (let j = 0; j < table[i].add_inf.length; j++) {
+          income += Math.round(table[i].add_inf[j].total_cost);
+          counts++;
+
+          let { time_range } = table[i].add_inf[j];
+          time_range = time_range.split(" - ");
+
+          hours.hours +=
+            time_range[1].split(":")[0] - time_range[0].split(":")[0];
+          hours.minutes +=
+            time_range[1].split(":")[1] - time_range[0].split(":")[1];
+        }
+      }
+
+      hours = hours.hours + hours.minutes / 60;
+
+      return { hours, income, counts };
     }
   },
   mounted() {
@@ -155,7 +221,7 @@ export default {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
 }
 
-.pred-table > .table {
+.table {
   margin: 0;
 }
 
