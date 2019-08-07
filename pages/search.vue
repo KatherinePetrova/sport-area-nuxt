@@ -22,8 +22,8 @@
         </b-form-select>
         <b-form-select v-model="filter.cover_type">
           <option disabled :value="null">Тип площадки</option>
-          <option value="closed">Крытая</option>
-          <option value="open">Открытая</option>
+          <option value="closed">крытое поле</option>
+          <option value="open">открытое поле</option>
         </b-form-select>
         <div class="time">
           <span>Предположительное время игры</span>
@@ -125,8 +125,8 @@
             <div class="content">
               <span style="font-size: 1.5em">{{ item.name }}</span>
               <span style="font-size: 1.5em">{{ `от ${item.cost*2} тг/ч` }}</span>
-              <span>{{ `Адрес - ${item.location.address}` }}</span>
-              <span>{{ `Тип - ${item.type}` }}</span>
+              <span>{{ `Адрес - ${item.location.address.substr(11, item.location.address.length - 1)}` }}</span>
+              <span>{{ `Тип - ${item.type=='open' ? 'открытое поле' : 'крытое поле' }` }}</span>
               <span
                 style="margin-bottom: 1em"
               >{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>

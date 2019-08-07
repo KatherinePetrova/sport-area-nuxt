@@ -20,8 +20,8 @@
         >
           <option :value="error_label" v-if="models.type == error_label" disabled>{{ error_label }}</option>
           <option :value="null" disabled>Введите тип площадки</option>
-          <option value="open">Открытая</option>
-          <option value="close">Крытая</option>
+          <option value="open">открытое поле</option>
+          <option value="close">крытое поле</option>
         </b-form-select>
 
         <b-input-group class="size">

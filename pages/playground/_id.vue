@@ -40,7 +40,7 @@
               <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
               <span
                 style="width: 60%; min-width: 00%; color: #707070;"
-              >{{ `${data.location.address}` }}</span>
+              >{{ `${data.location.address.substr(11, data.location.address.length - 1)}` }}</span>
             </div>
             <div>
               <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
@@ -334,9 +334,26 @@ export default {
 
     structure() {
       let result = "";
+
+      let translations = {
+        is_coach: "тренер",
+        is_parking: "парковка",
+        is_shower: "душевые",
+        is_lights: "освещение",
+        is_bathroom: "туалет",
+        is_dressroom: "раздевалки",
+        is_tribunes: "трибуны",
+        is_sauna: "сауна"
+      };
+
       for (let key in this.data) {
-        if (key.includes("is") && this.data[key]) {
-          result += key.substr(3, key.length) + ", ";
+        if (
+          key.includes("is_") &&
+          !key.includes("is_favorite") &&
+          !key.includes("is_approved") &&
+          this.data[key]
+        ) {
+          result += translations[key] + ", ";
         }
       }
 

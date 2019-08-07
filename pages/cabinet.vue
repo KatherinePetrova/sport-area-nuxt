@@ -120,8 +120,12 @@
               <div class="content">
                 <div style="font-size: 1.5em">{{ item.playground.name }}</div>
                 <div>{{ `Полная стоимость - ${Math.round(item.total_cost)} тг` }}</div>
-                <div class="small">{{`Адрес - ${item.playground.location.address}`}}</div>
-                <div class="small">{{`Тип покрытия - ${item.playground.type}`}}</div>
+                <div
+                  class="small"
+                >{{`Адрес - ${item.playground.location.address.substr(11, item.playground.location.address.length -1)}`}}</div>
+                <div
+                  class="small"
+                >{{`Тип - ${item.playground.type=='open' ? 'открытое поле' : 'крытое поле' }`}}</div>
                 <div
                   class="small"
                   style="margin-bottom: 1.5em;"
@@ -190,8 +194,10 @@
               <div class="content" style="padding-bottom: 2em">
                 <div style="font-size: 1.5em">{{ item.name }}</div>
                 <div>{{ `Стоимость - от ${Math.round(item.cost*2)} тг` }}</div>
-                <div class="small">{{`Адрес - ${item.location.address}`}}</div>
-                <div class="small">{{`Тип покрытия - ${item.type}`}}</div>
+                <div
+                  class="small"
+                >{{`Адрес - ${item.location.address.substr(11, item.location.address.length-1)}`}}</div>
+                <div class="small">{{`Тип - ${item.type=='open' ? 'открытое поле' : 'крытое поле' }`}}</div>
                 <div
                   class="small"
                   style="margin-bottom: 1.5em;"
@@ -201,7 +207,7 @@
                   @click.stop
                   style="bottom: 0.5em"
                 >Ручная бронь</nuxt-link>
-                <nuxt-link :to="`/objects/${item.id}`" @click.stop>Подробная информация</nuxt-link>
+                <nuxt-link :to="`/objects/${item.id}`" @click.stop>Подробнее</nuxt-link>
               </div>
             </div>
             <div v-if="myObjects.length == 0">Ничего нет...</div>

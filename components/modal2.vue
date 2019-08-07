@@ -1,7 +1,9 @@
 <template>
   <div class="modal-two-main">
     <div class="inner-modal" :style="{ padding: data.length > 0 ? '1em 0' : '3em' }">
-      <div class="total">{{ `Всего ${total} объекта`.toUpperCase() }}</div>
+      <div
+        class="total"
+      >{{ `Всего ${total} ${total <= 4 && total != 0 ? total == 1 ? 'объект' : 'объекта' : 'объектов'}`.toUpperCase() }}</div>
       <div
         class="more_abs"
         @click.stop="$router.push(`/search/?category=${category_id}`)"
@@ -14,11 +16,11 @@
         <div class="content">
           <span style="font-size: 1.5em">{{ item.name }}</span>
           <span style="font-size: 1.5em">{{ `от ${item.cost*2} тг/ч` }}</span>
-          <span>{{ `Адрес - ${item.location.address}` }}</span>
-          <span>{{ `Тип - ${item.type}` }}</span>
+          <span>{{ `Адрес - ${item.location.address.substr(11, item.location.address.length - 1)}` }}</span>
+          <span>{{ `Тип - ${item.type=='open' ? 'открытое поле' : 'крытое поле' }` }}</span>
           <span
             style="margin-bottom: 1.5em"
-          >{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)} м` }}</span>
+          >{{ `Размеры - ${Math.round(item.length)}х${Math.round(item.width)}м` }}</span>
           <nuxt-link :to="`/playground/${item.id}`" @click.stop>Подробнее</nuxt-link>
         </div>
       </div>
