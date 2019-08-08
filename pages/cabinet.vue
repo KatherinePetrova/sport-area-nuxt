@@ -4,9 +4,13 @@
     <div class="main">
       <div class="title">Личный кабинет</div>
       <div class="save_button">
-        <button @click="save()" :disabled="loading">
-          Сохранить
-          <b-spinner small style="margin-right: 0.5em" v-if="loading"></b-spinner>
+        <button @click="save()" :disabled="loading" style="display: flex; align-items: center">
+          <b-spinner
+            small
+            style="margin-right: 0.5em; border-radius: 50% !important"
+            v-if="loading"
+            :disabled="loading"
+          ></b-spinner>Сохранить
         </button>
       </div>
       <div class="cabinet_block">
@@ -197,7 +201,9 @@
                 <div
                   class="small"
                 >{{`Адрес - ${item.location.address.substr(11, item.location.address.length-1)}`}}</div>
-                <div class="small">{{`Тип - ${item.type=='open' ? 'открытое поле' : 'крытое поле' }`}}</div>
+                <div
+                  class="small"
+                >{{`Тип - ${item.type=='open' ? 'открытое поле' : 'крытое поле' }`}}</div>
                 <div
                   class="small"
                   style="margin-bottom: 1.5em;"

@@ -32,11 +32,6 @@ export default {
   opacity: 0;
 }
 
-html,
-body {
-  overflow: hidden;
-}
-
 .loading-page {
   position: fixed;
 

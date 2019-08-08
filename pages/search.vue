@@ -20,7 +20,7 @@
             :value="item.id"
           >{{item.name}}</option>
         </b-form-select>
-        <b-form-select v-model="filter.cover_type">
+        <b-form-select v-model="filter.type">
           <option disabled :value="null">Тип площадки</option>
           <option value="closed">крытое поле</option>
           <option value="open">открытое поле</option>
@@ -29,8 +29,18 @@
           <span>Предположительное время игры</span>
           <span style="display: flex; align-items: center">
             с
-            <b-form-input v-model="filter.time_from" placeholder="ЧЧ/ММ" style="margin: 0 0.5em"></b-form-input>до
-            <b-form-input v-model="filter.time_to" placeholder="ЧЧ/ММ" style="margin: 0 0.5em"></b-form-input>
+            <b-form-input
+              v-model="filter.time_from"
+              placeholder="ЧЧ/ММ"
+              style="margin: 0 0.5em"
+              v-mask="'##/##'"
+            ></b-form-input>до
+            <b-form-input
+              v-model="filter.time_to"
+              placeholder="ЧЧ/ММ"
+              style="margin: 0 0.5em"
+              v-mask="'##/##'"
+            ></b-form-input>
           </span>
         </div>
         <div class="time">
@@ -171,7 +181,7 @@ export default {
         is_dressroom: false,
         is_tribunes: false,
         is_sauna: false,
-        cover_type: null,
+        type: null,
         order_by: null,
         time_from: null,
         time_to: null,
@@ -210,6 +220,10 @@ export default {
       ];
 
       return center;
+    },
+
+    page() {
+      return this.$store.state.pages.searchResults;
     }
   },
   watch: {
@@ -292,7 +306,7 @@ export default {
         }
       }
 
-      let query = { ...route.query };
+      let { query } = route;
       for (let key in query) {
         this.filter[key] = query[key];
       }
@@ -310,6 +324,7 @@ export default {
 
   async mounted() {
     await this.applySearch(this.$route);
+    console.log(this.page);
   }
 };
 </script>

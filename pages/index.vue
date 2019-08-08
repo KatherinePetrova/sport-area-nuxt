@@ -39,7 +39,10 @@
     </section>
     <section>
       <div class="container mb-5">
-        <div class="col-lg-12 mt-5 box-2" :style="{ border: '1px solid #064482' }">
+        <div
+          class="col-lg-12 mt-5 box-2"
+          :style="{ border: '1px solid #064482', marginBottom: '5em' }"
+        >
           <h1 class="font-weight-light">
             <span>НОВОСТИ</span>
           </h1>
@@ -145,7 +148,7 @@ export default {
         let offsetWidth = document.documentElement.offsetWidth;
 
         if (offsetWidth >= 768) {
-          return 4;
+          return 3;
         } else {
           return 1;
         }
@@ -190,6 +193,8 @@ export default {
   transition: 1s;
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
+
   position: relative;
 
   margin-bottom: 1rem !important;

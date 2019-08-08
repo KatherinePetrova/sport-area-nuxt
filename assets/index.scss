@@ -84,9 +84,9 @@ form > select {
   src: url("fonts/GOTHIC.TTF") format("truetype");
 }
 
-// body {
-//   font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif !important;
-// }
+* {
+  font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif !important;
+}
 
 h1 h2 h3 h4 h5 {
   color: #064482;
@@ -370,7 +370,7 @@ select {
   background-image: url("/img/news.png");
   background-repeat: no-repeat;
   background-size: cover;
-  height: 20rem;
+  height: 15rem;
   color: white;
   font-size: 20px;
 

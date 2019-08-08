@@ -23,6 +23,25 @@ const createStore = () => {
       success: {
         show: false,
         message: ""
+      },
+
+      cover_type: [
+        "Асфальтовая",
+        "Грунтовая",
+        "Песок",
+        "Газон",
+        "Искусственный газон",
+        "Паркет",
+        "Линолиум",
+        "Ламинат",
+        "Хард",
+        "Терафлекс",
+        "Фанера",
+        "Прорезиненное"
+      ],
+
+      pages: {
+        searchResults: 1
       }
     },
 
@@ -84,6 +103,12 @@ const createStore = () => {
       setSuccess(state, payload) {
         state.success.show = payload.show;
         if (payload.message) state.success.message = payload.message;
+      },
+
+      setPages(state, payload) {
+        for (let key in payload) {
+          state.pages[key] == payload[key];
+        }
       }
     },
 
@@ -154,6 +179,7 @@ const createStore = () => {
             query += `${key}=${state.searchQuery[key]}&`;
           }
           let response = await api().get("playgrounds/?" + query);
+          console.log(response);
           let { data } = response;
 
           commit("setSearchResults", data.results);

@@ -1,5 +1,5 @@
 <template>
-  <div class="object-main">
+  <div class="object-main" ref="object-main">
     <div class="title" :style="{backgroundImage: `url(${playcategory.photo})`}">{{ data.name }}</div>
     <div class="content">
       <div class="data filter">
@@ -37,12 +37,12 @@
           <option :value="1">Сначала старые</option>
         </b-form-select>
       </div>
-      <div class="data">
+      <div class="data" ref="data">
         <div class="title">Информация о бронировании</div>
         <div class="info">{{ `Общее количество броней за период: ${numbers.counts}` }}</div>
         <div class="info">{{ `Прибыль за период: ${numbers.income}` }}</div>
         <div class="info">{{ `Общее количество часов броней за период: ${numbers.hours}` }}</div>
-        <div class="pred-table">
+        <div class="pred-table" ref="pred-table">
           <div class="table">
             <div class="table-row">
               <div class="table-cell">Имя</div>
@@ -95,12 +95,9 @@ export default {
       item => item.id == data.category
     );
     let booking_data = await store.dispatch("getPlaygroundBooking", params.id);
-    console.log(booking_data);
-
     let months = ru.months;
 
     return {
-      loaded: false,
       data,
       booking_data,
       playcategory,
@@ -133,7 +130,9 @@ export default {
         item.add_inf = bookings.filter(
           el =>
             el.date == item.compare &&
-            el.user_info.name.includes(this.filter.search) &&
+            el.user_info.name
+              .toLowerCase()
+              .includes(this.filter.search.toLowerCase()) &&
             new Date(el.date).getTime() >= this.filter.date.from.getTime() &&
             new Date(el.date).getTime() <= this.filter.date.to.getTime()
         );
@@ -197,9 +196,6 @@ export default {
 
       return { hours, income, counts };
     }
-  },
-  mounted() {
-    this.loaded = true;
   }
 };
 </script>
@@ -218,6 +214,8 @@ export default {
 }
 
 .data > .pred-table {
+  height: 1%;
+  transition: 1s;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
 }
 

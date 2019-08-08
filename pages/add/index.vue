@@ -118,21 +118,27 @@
         <div class="infrastructure">
           <label>Инфраструктура*</label>
           <b-form-checkbox class="point" v-model="models.is.coach">Тренер</b-form-checkbox>
-          <b-form-checkbox class="point" v-model="models.is.bathroom">Ванные комнаты</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.bathroom">Туалет</b-form-checkbox>
           <b-form-checkbox class="point" v-model="models.is.dressroom">Раздевалки</b-form-checkbox>
           <b-form-checkbox class="point" v-model="models.is.parking">Парковка</b-form-checkbox>
-          <b-form-checkbox class="point" v-model="models.is.lights">Прожектора</b-form-checkbox>
-          <b-form-checkbox class="point" v-model="models.is.shower">Душ</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.lights">Освещение</b-form-checkbox>
+          <b-form-checkbox class="point" v-model="models.is.shower">Душевые</b-form-checkbox>
           <b-form-checkbox class="point" v-model="models.is.tribunes">Трибуны</b-form-checkbox>
           <b-form-checkbox class="point" v-model="models.is.sauna">Сауна</b-form-checkbox>
         </div>
 
-        <b-form-input
-          placeholder="Тип покрытия"
+        <b-form-select
           v-model="models.cover_type"
           :state="models.cover_type == error_label ? false : null"
           @focus="models.cover_type == error_label ? models.cover_type = null : models.cover_type = models.cover_type"
-        ></b-form-input>
+        >
+          <option :value="null">Тип покрытия</option>
+          <option
+            :value="item"
+            v-for="(item, index) in $store.state.cover_type"
+            :key="'cover_type_option' + index"
+          >{{ item }}</option>
+        </b-form-select>
 
         <b-form-input
           type="number"

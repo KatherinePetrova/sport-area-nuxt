@@ -67,9 +67,8 @@
               <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
             </div>
             <div>
-              <span
-                style="width: 100%; min-width: 100%; color: #707070;"
-              >{{ `Контакты: ${data.phone}` }}</span>
+              <span style="width: 40%; min-width: 40%; color: #707070;">Контакты</span>
+              <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.phone }}</span>
             </div>
           </div>
         </div>
