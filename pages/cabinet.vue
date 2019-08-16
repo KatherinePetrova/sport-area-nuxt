@@ -109,6 +109,10 @@
         <div class="my-booked" v-if="!showLess">
           <div class="title">Мои брони</div>
           <div class="result">
+            <label
+              style="color: rgba(180, 180, 180, 1)"
+              v-if="myBooks.length > 0"
+            >Нажмите на объект для просмотра ифнормации</label>
             <div
               class="block"
               v-for="(item, index) in myBooks"
@@ -178,6 +182,7 @@
         >
           <div class="title">Мои объекты</div>
           <div class="result">
+            <label style="color: rgba(180, 180, 180, 1)">Нажмите на объект для редактирования</label>
             <div
               class="block"
               v-for="(item, index) in myObjects"
@@ -209,7 +214,7 @@
                   style="margin-bottom: 1.5em;"
                 >{{`Размеры - ${Math.round(item.width)}x${Math.round(item.length)}`}}</div>
                 <nuxt-link
-                  :to="`/playground/${item.id}`"
+                  :to="`/playground/${item.id}?owner_book=true`"
                   @click.stop
                   style="bottom: 0.5em"
                 >Ручная бронь</nuxt-link>
@@ -789,7 +794,7 @@ div > .toggle-2 {
   display: flex;
   justify-content: space-between;
 
-  height: 1%;
+  height: fit-content;
 }
 
 .my-booked > .more {
@@ -808,7 +813,7 @@ div > .toggle-2 {
 
   position: relative;
 
-  height: 1%;
+  height: fit-content;
   min-height: fit-content;
 }
 
@@ -834,10 +839,11 @@ div > .toggle-2 {
 
   display: flex;
   align-items: center;
+  text-align: center;
 
   flex-direction: column;
 
-  height: 1%;
+  height: fit-content;
 }
 
 .result > .block {
@@ -855,6 +861,8 @@ div > .toggle-2 {
   transition: 0.5s;
 
   position: relative;
+
+  text-align: left;
 }
 
 .result > .block:hover {

@@ -26,78 +26,107 @@
         <div class="book_button" v-else>
           <button @click="proceed()" :disabled="booked.length == 0">ЗАБРОНИРОВАТЬ</button>
         </div>
-        <div class="inf">
-          <div
-            class="main_image"
-            :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
-          ></div>
-          <div class="information">
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
-              <span class="cost">{{ `от ${data.cost*2} т` }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
-              <span
-                style="width: 60%; min-width: 00%; color: #707070;"
-              >{{ `${data.location.address.substr(11, data.location.address.length - 1)}` }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
-              <span
-                style="width: 60%; min-width: 60%; color: #707070;"
-              >{{ `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
-              <span
-                style="width: 60%; min-width: 60%; color: #707070;"
-              >{{ `${Math.round(data.width)}х${Math.round(data.length)} м` }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Тип покрытия</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ `${data.cover_type}` }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Инфраструктура</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ structure() }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Описание</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
-            </div>
-            <div>
-              <span style="width: 40%; min-width: 40%; color: #707070;">Контакты</span>
-              <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.phone }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="inf">
-          <div class="images">
+
+        <template v-if="!$route.query.owner_book">
+          <div class="inf">
             <div
-              class="img"
-              v-for="(item, index) in data.images"
-              :key="'img' + index"
-              :style="{marginRight: (index + 1)%5==0 ? '0' : '2.5%', backgroundImage: `url(${item.image})`}"
-              :class="{active: main_image==index}"
-              @click="main_image=index"
-            ></div>
-          </div>
-          <div class="map">
-            <no-ssr>
-              <yandex-map
-                :coords="[data.location.latitude, data.location.longitude]"
-                style="width: 100%; height: 100%;"
-                zoom="13"
+              class="main_image"
+              :class="{'full-screen': full_screen}"
+              :style="{backgroundImage: data.images[main_image] ? `url(${data.images[main_image].image})` : 'url(/img/whistle.png)'}"
+            >
+              <b-button
+                class="image-arrow"
+                style="left: 1em"
+                @click="main_image--"
+                :disabled="main_image <= 0"
               >
-                <ymap-marker
-                  :marker-id="data.location.id"
-                  :coords="[data.location.latitude, data.location.longitude]"
-                ></ymap-marker>
-              </yandex-map>
-            </no-ssr>
+                <img src="/img/left-arrow.png" alt />
+              </b-button>
+              <b-button
+                class="image-arrow"
+                style="right: 1em"
+                @click="main_image++"
+                :disabled="main_image >= data.images.length -1"
+              >
+                <img src="/img/right-arrow.png" alt />
+              </b-button>
+              <b-button
+                @click="full_screen = !full_screen"
+              >{{ full_screen ? 'Вернуть' : 'Развернуть' }}</b-button>
+            </div>
+            <div class="information">
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Стоимость</span>
+                <span class="cost">{{ `от ${data.cost*2} т` }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Адрес</span>
+                <span
+                  style="width: 60%; min-width: 00%; color: #707070;"
+                >{{ `${data.location.address.substr(11, data.location.address.length - 1)}` }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
+                <span
+                  style="width: 60%; min-width: 60%; color: #707070;"
+                >{{ `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
+                <span
+                  style="width: 60%; min-width: 60%; color: #707070;"
+                >{{ `${Math.round(data.width)}х${Math.round(data.length)} м` }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Тип покрытия</span>
+                <span style="width: 60%; min-width: 60%; color: #707070;">{{ `${data.cover_type}` }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Инфраструктура</span>
+                <span style="width: 60%; min-width: 60%; color: #707070;">{{ structure() }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Описание</span>
+                <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.description }}</span>
+              </div>
+              <div>
+                <span style="width: 40%; min-width: 40%; color: #707070;">Контакты</span>
+                <span style="width: 60%; min-width: 60%; color: #707070;">{{ data.phone }}</span>
+              </div>
+            </div>
           </div>
-        </div>
+          <div class="inf">
+            <div class="images">
+              <div
+                class="img"
+                v-for="(item, index) in data.images"
+                :key="'img' + index"
+                :style="{marginRight: (index + 1)%5==0 ? '0' : '2.5%', backgroundImage: `url(${item.image})`}"
+                :class="{active: main_image==index}"
+                @click="main_image=index"
+              >
+                <b-button
+                  @click="full_screen = !full_screen"
+                  style="background-color: rgba(0, 0, 0, 0.5)"
+                >{{ full_screen ? 'Вернуть' : 'Развернуть' }}</b-button>
+              </div>
+            </div>
+            <div class="map">
+              <no-ssr>
+                <yandex-map
+                  :coords="[data.location.latitude, data.location.longitude]"
+                  style="width: 100%; height: 100%;"
+                  zoom="13"
+                >
+                  <ymap-marker
+                    :marker-id="data.location.id"
+                    :coords="[data.location.latitude, data.location.longitude]"
+                  ></ymap-marker>
+                </yandex-map>
+              </no-ssr>
+            </div>
+          </div>
+        </template>
         <div class="booking">
           <div class="title">Бронирование</div>
           <div class="legend">
@@ -196,6 +225,7 @@ export default {
       let table = createTable(data.days, times);
 
       return {
+        full_screen: false,
         data,
         category,
         main_image: 0,
@@ -639,11 +669,49 @@ export default {
 
   height: 35em;
 
-  background-size: cover;
+  background-color: rgba(0, 0, 0, 0.16);
+
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
 
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+
+  position: relative;
+
   /* border-radius: 12px; */
+}
+
+.main_image > .image-arrow {
+  position: absolute;
+
+  top: 40%;
+
+  border-radius: 50%;
+
+  width: 5em;
+  height: 5em;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0;
+}
+
+.inf > .full-screen {
+  position: fixed;
+
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+
+  z-index: 999999;
+
+  top: 0;
+  left: 0;
 }
 
 .inf > .images {
@@ -702,6 +770,10 @@ export default {
   box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
 
   cursor: pointer;
+}
+
+.img > * {
+  display: none;
 }
 
 .images > .img:hover {
@@ -855,6 +927,47 @@ td.booked-but-not-paid {
 
     height: 15em;
     margin-bottom: 1em;
+
+    background-size: cover;
+  }
+
+  .main_image > * {
+    display: none !important;
+  }
+
+  .inf > .full-screen {
+    position: fixed;
+
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+
+    z-index: 999999;
+
+    top: 0;
+    left: 0;
+
+    margin: 0;
+  }
+
+  .full-screen > button {
+    width: 100%;
+
+    text-align: center;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .full-screen > * {
+    display: flex !important;
+  }
+
+  .main_image > .image-arrow {
+    border-radius: 50% !important;
+    top: initial;
+    bottom: 10%;
   }
 
   .inf > .information {
@@ -871,6 +984,10 @@ td.booked-but-not-paid {
 
     width: 100%;
     height: 10em;
+  }
+
+  .img > * {
+    display: flex;
   }
 }
 </style>

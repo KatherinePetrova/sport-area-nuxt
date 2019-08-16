@@ -27,14 +27,9 @@
         </b-form-select>
         <div class="time">
           <span>Предположительное время игры</span>
-          <span style="display: flex; align-items: center">
+          <span>
             с
-            <b-form-input
-              v-model="filter.time_from"
-              placeholder="ЧЧ/ММ"
-              style="margin: 0 0.5em"
-              v-mask="'##/##'"
-            ></b-form-input>до
+            <b-form-input v-model="filter.time_from" placeholder="ЧЧ/ММ" v-mask="'##/##'"></b-form-input>до
             <b-form-input
               v-model="filter.time_to"
               placeholder="ЧЧ/ММ"
@@ -45,10 +40,10 @@
         </div>
         <div class="time">
           <span>Стоимость, т</span>
-          <span style="display: flex; align-items: center">
+          <span>
             от
-            <b-form-input style="margin: 0 0.5em" v-model="filter.cost_from"></b-form-input>до
-            <b-form-input style="margin: 0 0.5em" v-model="filter.cost_to"></b-form-input>
+            <b-form-input v-model="filter.cost_from" type="number"></b-form-input>до
+            <b-form-input v-model="filter.cost_to" type="number"></b-form-input>
           </span>
         </div>
         <b-form-select v-model="filter.order_by">
@@ -553,6 +548,22 @@ export default {
   margin-bottom: 2em;
 
   color: #064482;
+
+  position: relative;
+}
+
+.time > span {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+}
+
+.time > span > input {
+  max-width: 38%;
+  width: 100%;
+
+  margin: 0 0.5em;
 }
 
 .block > .checkbox {
@@ -674,6 +685,10 @@ export default {
 
     margin: 0;
     margin-bottom: 1em;
+  }
+
+  .time > span {
+    width: 100%;
   }
 
   .pole_block {

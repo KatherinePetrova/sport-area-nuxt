@@ -133,6 +133,12 @@ export default {
         address: this.data.location.address
       };
 
+      let pg_user_phone = this.user.profile.phone;
+      pg_user_phone = pg_user_phone.replace(/ /g, "");
+      pg_user_phone = pg_user_phone.replace("+7", "8");
+      pg_user_phone = pg_user_phone.replace("(", "");
+      pg_user_phone = pg_user_phone.replace(")", "");
+
       let paybox = {
         pg_merchant_id: 517131,
         pg_description,
@@ -142,7 +148,7 @@ export default {
         pg_success_url: `${
           process.env.baseUrl
         }/cabinet?payment_success=${JSON.stringify(success)}`,
-        pg_user_phone: this.user.profile.phone,
+        pg_user_phone,
         pg_user_contact_email: this.user.email
       };
 

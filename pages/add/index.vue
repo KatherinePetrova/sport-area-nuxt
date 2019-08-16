@@ -170,11 +170,11 @@
 
           <template v-if="imagesModel.length > 0">
             <label style="font-size: 1rem; color: #064482; margin-top: 1em">Предпросмотр</label>
+
             <b-carousel
               controls
               background="#f1f9ff"
               indicators
-              style="height: 15rem; display: flex; justify-content: center; align-items: center; overflow: hidden"
               class="carousel"
               img-width="100%"
               v-if="imagePicked"
@@ -436,7 +436,7 @@ export default {
         reader.readAsDataURL(input.files[0]);
         imageObject.file = input.files[0];
 
-        this.imagesModel.push(imageObject);
+        this.imagesModel.unshift(imageObject);
 
         setTimeout(() => {
           this.imagePicked = true;
@@ -719,7 +719,7 @@ export default {
   display: flex;
   flex-direction: column;
 
-  height: 1%;
+  height: fit-content;
 }
 
 .form > * {
@@ -1040,6 +1040,8 @@ div > .toggle-2 {
   width: 100%;
 
   border: solid 1px #064482;
+
+  position: relative;
 }
 
 .img > .image-uploader {

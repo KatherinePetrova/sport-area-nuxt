@@ -7,21 +7,8 @@
         <b-form-input placeholder="Поиск" v-model="filter.search"></b-form-input>
         <label style="margin: 0">Период</label>
         <div class="date">
-          <no-ssr>
-            <date-picker
-              v-model="filter.date.from"
-              :language="filter.date.language"
-              class="datepicker"
-              :bootstrap-styling="true"
-            ></date-picker>
-
-            <date-picker
-              v-model="filter.date.to"
-              :language="filter.date.language"
-              class="datepicker"
-              :bootstrap-styling="true"
-            ></date-picker>
-          </no-ssr>
+          <b-form-input type="date" class="datepicker" v-model="filter.date.from"></b-form-input>
+          <b-form-input type="date" class="datepicker" v-model="filter.date.to"></b-form-input>
         </div>
 
         <label style="margin: 0">Тип бронирования</label>
@@ -103,9 +90,8 @@ export default {
       playcategory,
       filter: {
         date: {
-          from: new Date(0),
-          to: new Date(),
-          language: ru
+          from: null,
+          to: null
         },
         search: "",
         type: null,
@@ -132,9 +118,7 @@ export default {
             el.date == item.compare &&
             el.user_info.name
               .toLowerCase()
-              .includes(this.filter.search.toLowerCase()) &&
-            new Date(el.date).getTime() >= this.filter.date.from.getTime() &&
-            new Date(el.date).getTime() <= this.filter.date.to.getTime()
+              .includes(this.filter.search.toLowerCase())
         );
 
         if (typeof this.filter.type != "object") {
@@ -154,6 +138,17 @@ export default {
           });
         }
       });
+
+      let { from, to } = this.filter.date;
+      if (from) {
+        from = new Date(from);
+        result = result.filter(el => from.getTime() <= el.date.getTime());
+      }
+
+      if (to) {
+        to = new Date(to);
+        result = result.filter(el => to.getTime() >= el.date.getTime());
+      }
 
       result.sort((a, b) => {
         if (a.date.getTime() > b.date.getTime()) {
@@ -210,11 +205,13 @@ export default {
   border-radius: 1em;
 
   position: relative;
-  height: 1%;
+
+  height: fit-content;
 }
 
 .data > .pred-table {
-  height: 1%;
+  height: fit-content;
+
   transition: 1s;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
 }
@@ -265,7 +262,7 @@ export default {
   justify-content: space-between;
 }
 
-.date > div {
+.date > * {
   width: 48%;
 }
 
