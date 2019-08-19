@@ -97,15 +97,17 @@ export default (data, times) => {
         let day = data.find(item => item.date == header[j].date);
         let window = day.windows.find(item => item.from_time == time[i].from);
 
-        if (window && window.price != 0) {
+        if (window && window.price > 0) {
           window.title = window.price + " т";
           window.active = false;
           window.date = day.date;
           window.arrayCoor = { x: i, y: j };
 
           subArray.push(window);
+        } else if (window && window.price == 1) {
+          subArray.push({ title: "занято" });
         } else {
-          subArray.push({ title: "-" });
+          subArray.push({ title: "закрыто" });
         }
       }
     }

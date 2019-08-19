@@ -69,7 +69,7 @@
                 <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
                 <span
                   style="width: 60%; min-width: 60%; color: #707070;"
-                >{{ `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` }}</span>
+                >{{ parseInt(data.work_time_from_common_days.split(":").join()) - parseInt(data.work_time_to_common_days.split(":").join()) != 1 ? `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` : "круглосуточно" }}</span>
               </div>
               <div>
                 <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
@@ -162,8 +162,9 @@
                 :class="{
                 active: subItem.active && !subItem.is_booked, 
                 booked: subItem.is_booked && subItem.is_paid,
-                'booked-but-not-paid': subItem.is_booked && !subItem.is_paid,
-                book: subItem.id && !subItem.is_booked
+                'booked-but-not-paid': (subItem.is_booked && !subItem.is_paid) || subItem.title == 'занято',
+                book: subItem.id && !subItem.is_booked,
+                closed: subItem.title == 'закрыто'
               }"
                 v-for="(subItem, subIndex) in item"
                 :key="subItem.id + 'td' + subIndex"
@@ -317,7 +318,7 @@ export default {
         this.clearTable(table, { y });
         if (
           ((table[x + 1] && !table[x + 1][y].active) || !table[x + 1]) &&
-          (table[x - 1] && !table[x - 1][y].active)
+          (!table[x - 1] || (table[x - 1] && !table[x - 1][y].active))
         ) {
           this.clearTable(table, { x });
           if (
@@ -712,6 +713,8 @@ export default {
 
   top: 0;
   left: 0;
+
+  background-size: contain !important;
 }
 
 .inf > .images {
@@ -847,6 +850,10 @@ td.booked {
 td.booked-but-not-paid {
   background-color: rgba(255, 237, 5, 0.5);
   color: #0745822f;
+}
+
+td.closed {
+  color: rgb(150, 150, 150);
 }
 
 @media (max-width: 767px) {
