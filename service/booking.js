@@ -105,9 +105,17 @@ export default (data, times) => {
 
           subArray.push(window);
         } else if (window && window.price == 1) {
-          subArray.push({ title: "занято" });
+          subArray.push({
+            title: "занято",
+            from_time: window.from_time,
+            to_time: window.to_time
+          });
         } else {
-          subArray.push({ title: "закрыто" });
+          subArray.push({
+            title: "закрыто",
+            from_time: window.from_time,
+            to_time: window.to_time
+          });
         }
       }
     }

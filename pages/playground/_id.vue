@@ -143,6 +143,31 @@
               <div class="text">- ожидается оплата</div>
             </div>
           </div>
+          <div class="mobile-table">
+            <label style="color: #064482; margin: 0">Выберите дату</label>
+            <b-form-input
+              type="date"
+              v-model="mobileModel"
+              :min="table.header[1].date"
+              :max="table.header[table.header.length - 2].date"
+            ></b-form-input>
+            <transition-group class="table" v-if="mobileModel">
+              <div class="title" key="title">{{ mobileTable.title }}</div>
+              <div
+                @click="book(item, item.arrayCoor)"
+                :class="{
+                  active: item.active && !item.is_booked, 
+                  'booked-color': item.is_booked && item.is_paid,
+                  'booked-but-not-paid': (item.is_booked && !item.is_paid) || item.title == 'занято',
+                  book: item.id && !item.is_booked,
+                  closed: item.title == 'закрыто'
+                }"
+                class="table-item"
+                v-for="(item, index) in mobileTable.data"
+                :key="'mobile-table-item' + index"
+              >{{ `${item.from_time ? item.from_time + ' - ' : ''}${item.to_time ? item.to_time + ' ' : ''}${item.title}` }}</div>
+            </transition-group>
+          </div>
           <table border="1">
             <tr>
               <td
@@ -161,7 +186,7 @@
               <td
                 :class="{
                 active: subItem.active && !subItem.is_booked, 
-                booked: subItem.is_booked && subItem.is_paid,
+                'booked-color': subItem.is_booked && subItem.is_paid,
                 'booked-but-not-paid': (subItem.is_booked && !subItem.is_paid) || subItem.title == 'занято',
                 book: subItem.id && !subItem.is_booked,
                 closed: subItem.title == 'закрыто'
@@ -237,7 +262,8 @@ export default {
           name: "",
           phone: ""
         },
-        ownerBook: false
+        ownerBook: false,
+        mobileModel: null
       };
     } catch (error) {
       throw error;
@@ -289,6 +315,24 @@ export default {
       }
 
       return { header, result };
+    },
+
+    mobileTable() {
+      if (!this.mobileModel) return { title: null, data: [] };
+
+      let title = this.mobileModel;
+      let index = this.table.header.findIndex(
+        el => el.date && el.date == title
+      );
+
+      title = this.table.header[index].title[0];
+
+      let data = [];
+      this.table.result.forEach(item => {
+        data.push(item[index]);
+      });
+
+      return { title, data };
     }
   },
   methods: {
@@ -623,6 +667,36 @@ export default {
   position: relative;
 }
 
+.booking > .mobile-table {
+  display: none;
+
+  padding: 1em;
+  position: sticky;
+  left: 0;
+}
+
+.mobile-table > input {
+  margin-bottom: 1em;
+}
+
+.mobile-table > .table {
+}
+
+.table > .table-item {
+  font-size: 1.25rem;
+
+  border: solid 1px #064482;
+  margin-bottom: -1px;
+
+  padding: 0.5em;
+
+  color: #064482;
+}
+
+.table > .title {
+  color: #064482;
+}
+
 .booking > .legend {
   display: flex;
 }
@@ -838,22 +912,22 @@ td.book:hover {
   background-color: rgba(0, 0, 0, 0.16);
 }
 
-td.active {
+.active {
   background-color: #bbffbb;
 }
 
-td.booked {
+.booked-color {
   background-color: #ffbbbb;
-  color: #0745822f;
+  color: #0745822f !important;
 }
 
-td.booked-but-not-paid {
+.booked-but-not-paid {
   background-color: rgba(255, 237, 5, 0.5);
-  color: #0745822f;
+  color: #0745822f !important;
 }
 
-td.closed {
-  color: rgb(150, 150, 150);
+.closed {
+  color: rgb(150, 150, 150) !important;
 }
 
 @media (max-width: 767px) {
@@ -896,6 +970,10 @@ td.closed {
     overflow: auto;
   }
 
+  .booking > .mobile-table {
+    display: block;
+  }
+
   .booking > .legend {
     flex-direction: column;
     position: sticky;
@@ -913,6 +991,7 @@ td.closed {
 
   table {
     table-layout: auto;
+    display: none;
   }
 
   td {
