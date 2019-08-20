@@ -140,13 +140,25 @@
           </div>
         </template>
         <no-ssr v-else>
-          <yandex-map :coords="mapCenter" style="width: 100%; height: 100%;" zoom="12">
+          <yandex-map
+            :coords="mapCenter"
+            style="width: 100%; height: 100%;"
+            zoom="12"
+            :cluster-options="clusterOptions"
+          >
             <ymap-marker
               :marker-id="item.location.id"
               :coords="[item.location.latitude, item.location.longitude]"
               v-for="(item, index) in searchResults"
               :key="'ymapmarker' + index"
               :balloon-template="balloon(item)"
+              :icon="{ 
+                imageHref: '/img/marker.png', 
+                layout: 'default#imageWithContent', 
+                imageSize: [28, 33],
+                imageOffset: [-14, -16], 
+              }"
+              cluster-name="1"
             ></ymap-marker>
           </yandex-map>
         </no-ssr>
@@ -204,6 +216,20 @@ export default {
         cost_from: null,
         cost_to: null,
         city: null
+      },
+
+      clusterOptions: {
+        "1": {
+          clusterDisableClickZoom: false,
+          clusterOpenBalloonOnClick: false
+          // clusterLayout: [
+          //   "<ul class=list>",
+          //   "{% for geoObject in properties.geoObjects %}",
+          //   '<li><a href=# data-placemarkid="{{ geoObject.properties.placemarkId }}" class="list_item">{{ geoObject.properties.balloonContentHeader|raw }}</a></li>',
+          //   "{% endfor %}",
+          //   "</ul>"
+          // ].join("")
+        }
       }
     };
   },

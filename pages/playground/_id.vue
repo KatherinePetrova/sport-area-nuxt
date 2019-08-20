@@ -121,6 +121,12 @@
                   <ymap-marker
                     :marker-id="data.location.id"
                     :coords="[data.location.latitude, data.location.longitude]"
+                    :icon="{ 
+                      imageHref: '/img/marker.png', 
+                      layout: 'default#imageWithContent', 
+                      imageSize: [28, 33],
+                      imageOffset: [-14, -16], 
+                    }"
                   ></ymap-marker>
                 </yandex-map>
               </no-ssr>
@@ -267,6 +273,11 @@ export default {
       };
     } catch (error) {
       throw error;
+    }
+  },
+  watch: {
+    mobileModel() {
+      window.scrollTo({ top: 1740, behavior: "smooth" });
     }
   },
   head() {
@@ -677,9 +688,6 @@ export default {
 
 .mobile-table > input {
   margin-bottom: 1em;
-}
-
-.mobile-table > .table {
 }
 
 .table > .table-item {
