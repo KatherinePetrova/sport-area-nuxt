@@ -6,7 +6,7 @@
       >{{ `Всего ${total} ${total <= 4 && total != 0 ? total == 1 ? 'объект' : 'объекта' : 'объектов'}`.toUpperCase() }}</div>
       <div
         class="more_abs"
-        @click.stop="$router.push(`/search/?category=${category_id}`)"
+        @click.stop="$router.push(`/search/1?category=${category_id}`)"
       >ПОСМОТРЕТЬ ЕЩЕ</div>
       <div class="pole_block" v-for="(item, index) in adaptData" :key="index+'pole_block'">
         <div

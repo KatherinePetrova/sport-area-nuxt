@@ -150,15 +150,36 @@
             ></ymap-marker>
           </yandex-map>
         </no-ssr>
+        <div class="pagination" v-if="page.count && page.count > 1">
+          <div class="pages">
+            <div
+              v-if="$route.params.page != 1"
+              @click="$router.push({ params: { page: parseInt(page.page) - 1 }, query: $route.query })"
+            >Назад</div>
+            <div
+              @click="$router.push({ params: { page: item }, query: $route.query })"
+              v-for="item in page.count"
+              :key="'page' + item"
+              :class="{active: item == page.page}"
+              style="font-weight: 600"
+            >{{ item }}</div>
+            <div
+              v-if="$route.params.page != page.count"
+              @click="$router.push({ params: { page: parseInt(page.page) + 1 }, query: $route.query })"
+            >Дальше</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script>
 export default {
-  async asyncData({ store, query, redirect }) {
+  async asyncData({ store, params, redirect }) {
     await store.dispatch("getPlaycategories");
     let cities = await store.dispatch("getCities");
+
+    store.commit("setPages", { search: { page: params.page } });
 
     return { cities };
   },
@@ -218,7 +239,7 @@ export default {
     },
 
     page() {
-      return this.$store.state.pages.searchResults;
+      return this.$store.state.pages.search;
     }
   },
   watch: {
@@ -283,11 +304,11 @@ export default {
         }
       }
 
-      this.$router.push("/search/" + query);
+      this.$router.push("/search/1" + query);
     },
 
     clearSearch() {
-      this.$router.push("/search");
+      this.$router.push("/search/1");
     },
 
     async applySearch(route) {
@@ -319,7 +340,6 @@ export default {
 
   async mounted() {
     await this.applySearch(this.$route);
-    console.log(this.page);
   }
 };
 </script>
@@ -357,10 +377,51 @@ export default {
   border: solid 1px #064482;
 
   position: relative;
+
+  margin-bottom: 3rem;
 }
 
 .result > .map {
   height: 50em;
+}
+
+.total > .pagination {
+  font-size: 1.2rem;
+
+  position: absolute;
+  bottom: -1em;
+
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: #064482;
+}
+
+.pagination > .pages {
+  padding: 0 1em;
+  background-color: white;
+
+  display: flex;
+}
+
+.pages > div {
+  padding: 0.2em 0.8em;
+  border: solid 1px #e8e7e7;
+
+  margin-left: -1px;
+
+  cursor: pointer;
+}
+
+.pages > div:hover {
+  background-color: rgba(0, 0, 0, 0.16);
+}
+
+.pages > .active {
+  background-color: #d6ecfb;
 }
 
 .total > .title {

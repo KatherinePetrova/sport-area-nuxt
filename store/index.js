@@ -41,7 +41,10 @@ const createStore = () => {
       ],
 
       pages: {
-        searchResults: 1
+        search: {
+          count: null,
+          page: 1
+        }
       }
     },
 
@@ -107,7 +110,8 @@ const createStore = () => {
 
       setPages(state, payload) {
         for (let key in payload) {
-          state.pages[key] == payload[key];
+          if (payload[key].count) state.pages[key].count = payload[key].count;
+          if (payload[key].page) state.pages[key].page = payload[key].page;
         }
       }
     },
@@ -178,10 +182,16 @@ const createStore = () => {
           for (let key in state.searchQuery) {
             query += `${key}=${state.searchQuery[key]}&`;
           }
+
+          query += `page=${state.pages.search.page}`;
+
           let response = await api().get("playgrounds/?" + query);
-          console.log(response);
           let { data } = response;
 
+          let { count } = data;
+          count = count < 20 ? 1 : Math.ceil(count / 20);
+
+          commit("setPages", { search: { count } });
           commit("setSearchResults", data.results);
         } catch (error) {
           throw error;
