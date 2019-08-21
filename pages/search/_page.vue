@@ -174,6 +174,7 @@
               :key="'page' + item"
               :class="{active: item == page.page}"
               style="font-weight: 600"
+              v-show="$route.params.page > item - 3 && $route.params.page < item + 3 || item == page.count || item == 1 "
             >{{ item }}</div>
             <div
               v-if="$route.params.page != page.count"

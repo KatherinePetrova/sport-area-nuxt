@@ -1,5 +1,5 @@
 function createTime(from, to) {
-  let count = (to - from) * 2 + 1;
+  let count = (to - from) * 2 + 3;
   let iterator = { hour: from, minute: 0 };
   let subResult = [];
   let result = [];
@@ -9,7 +9,7 @@ function createTime(from, to) {
     let minute =
       iterator.minute >= 10 ? iterator.minute : `0${iterator.minute}`;
 
-    subResult.push(`${hour}:${minute}`);
+    subResult.push(`${hour != 24 ? hour : "00"}:${minute}`);
     iterator.minute += 30;
     if (iterator.minute >= 60) {
       iterator.hour += 1;
@@ -42,7 +42,10 @@ function findLimitTimes(array) {
     if (min.value > intoInt[i]) min = { index: i, value: intoInt[i] };
   }
 
-  return { max: parseInt(array[max.index]), min: parseInt(array[min.index]) };
+  return {
+    max: parseInt(array[max.index]),
+    min: parseInt(array[min.index])
+  };
 }
 
 const days = [
@@ -97,7 +100,7 @@ export default (data, times) => {
         let day = data.find(item => item.date == header[j].date);
         let window = day.windows.find(item => item.from_time == time[i].from);
 
-        if (window && window.price > 0) {
+        if (window && window.price > 1) {
           window.title = window.price + " т";
           window.active = false;
           window.date = day.date;
@@ -113,8 +116,8 @@ export default (data, times) => {
         } else {
           subArray.push({
             title: "закрыто",
-            from_time: window.from_time,
-            to_time: window.to_time
+            from_time: window && window.from_time ? window.from_time : null,
+            to_time: window && window.to_time ? window.to_time : null
           });
         }
       }

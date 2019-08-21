@@ -67,9 +67,15 @@
               </div>
               <div>
                 <span style="width: 40%; min-width: 40%; color: #707070;">Время работы</span>
-                <span
-                  style="width: 60%; min-width: 60%; color: #707070;"
-                >{{ parseInt(data.work_time_from_common_days.split(":").join()) - parseInt(data.work_time_to_common_days.split(":").join()) != 1 ? `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` : "круглосуточно" }}</span>
+                <span style="width: 60%; min-width: 60%; color: #707070;">
+                  <!-- {{ "Будние: " + (Math.abs(parseInt(data.work_time_from_common_days.split(":").join()) - parseInt(data.work_time_to_common_days.split(":").join())) > 1 ? `${data.work_time_from_common_days} - ${data.work_time_to_common_days}` : "круглосуточно") }}
+                  <br />
+                  {{ "Выходные: " + (Math.abs(parseInt(data.work_time_from_holiday_days.split(":").join()) - parseInt(data.work_time_to_holiday_days.split(":").join())) > 1 ? `${data.work_time_from_holiday_days} - ${data.work_time_to_holiday_days}` : "круглосуточно") }}-->
+                  <label v-for="(item, index) in workTime" :key="'workTime' + index">
+                    {{ item }}
+                    <br />
+                  </label>
+                </span>
               </div>
               <div>
                 <span style="width: 40%; min-width: 40%; color: #707070;">Размер</span>
@@ -164,9 +170,9 @@
                 :class="{
                   active: item.active && !item.is_booked, 
                   'booked-color': item.is_booked && item.is_paid,
-                  'booked-but-not-paid': (item.is_booked && !item.is_paid) || item.title == 'занято',
+                  'booked-but-not-paid': item.is_booked && !item.is_paid,
                   book: item.id && !item.is_booked,
-                  closed: item.title == 'закрыто'
+                  closed: item.title == 'закрыто' || item.title == 'занято'
                 }"
                 class="table-item"
                 v-for="(item, index) in mobileTable.data"
@@ -193,9 +199,9 @@
                 :class="{
                 active: subItem.active && !subItem.is_booked, 
                 'booked-color': subItem.is_booked && subItem.is_paid,
-                'booked-but-not-paid': (subItem.is_booked && !subItem.is_paid) || subItem.title == 'занято',
+                'booked-but-not-paid': subItem.is_booked && !subItem.is_paid,
                 book: subItem.id && !subItem.is_booked,
-                closed: subItem.title == 'закрыто'
+                closed: subItem.title == 'закрыто' || subItem.title == 'занято'
               }"
                 v-for="(subItem, subIndex) in item"
                 :key="subItem.id + 'td' + subIndex"
@@ -325,6 +331,20 @@ export default {
         result[i] = subArray;
       }
 
+      for (let i = 0; i < result.length; i++) {
+        let checked = true;
+        for (let j = 0; j < result[i].length; j++) {
+          if (result[i][j].id) {
+            checked = false;
+          }
+        }
+
+        if (checked) {
+          result.splice(i, 1);
+          i--;
+        }
+      }
+
       return { header, result };
     },
 
@@ -344,6 +364,57 @@ export default {
       });
 
       return { title, data };
+    },
+
+    workTime() {
+      let times = {
+        common: {
+          from: this.data.work_time_from_common_days,
+          to: this.data.work_time_to_common_days
+        },
+
+        holiday: {
+          from: this.data.work_time_from_holiday_days,
+          to: this.data.work_time_to_holiday_days
+        }
+      };
+
+      let timestamps = {
+        common: {},
+        holiday: {}
+      };
+
+      for (let key in times) {
+        for (let key2 in times[key]) {
+          let date = new Date();
+          date.setHours(times[key][key2].split(":")[0]);
+          date.setMinutes(times[key][key2].split(":")[1]);
+
+          timestamps[key][key2] = date.getTime();
+        }
+      }
+
+      let strings = {};
+
+      for (let key in timestamps) {
+        if (Math.abs(timestamps[key].from - timestamps[key].to) == 60000) {
+          strings[key] = "круглосуточно";
+        } else {
+          strings[key] = `${times[key].from} - ${times[key].to}`;
+        }
+      }
+
+      let result = [];
+
+      for (let key in strings) {
+        if (key == "common") {
+          result.push(`Будние: ${strings[key]}`);
+        } else {
+          result.push(`Выходные: ${strings[key]}`);
+        }
+      }
+
+      return result;
     }
   },
   methods: {
@@ -821,8 +892,12 @@ export default {
 
 .information > div > span {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-  align-items: center;
+.information > div > span > label {
+  margin: 0;
 }
 
 .inf > .map {
